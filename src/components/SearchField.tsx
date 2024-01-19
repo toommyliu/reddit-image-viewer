@@ -59,44 +59,45 @@ const SearchField = () => {
 	return (
 		<>
 			<div className="flex flex-col justify-center items-center">
-				<div>
-					{loading ? (
-						<button>Loading</button>
-					) : (
-						<div className="flex justify-center">
-							<select
-								className="border-2 border-gray-300 rounded-lg focus:outline-none mr-2 mt-10 text-center"
-								value={mode}
-								onChange={onModeChange}
-							>
-								<option value="user">User</option>
-								<option value="subreddit">Subreddit</option>
-							</select>
-							<form onSubmit={onFormSubmit}>
-								<input
-									value={query}
-									onChange={onQueryChange}
-									placeholder="Query"
-									className="border-2 border-gray-300 rounded-lg mt-10"
-								/>
-							</form>
-						</div>
-					)}
-				</div>
+				{loading ? (
+					<button>Loading</button>
+				) : (
+					<div className="flex justify-center">
+						<select
+							className="border-2 border-gray-300 rounded-lg focus:outline-none mr-2 mt-10 text-center"
+							value={mode}
+							onChange={onModeChange}
+						>
+							<option value="user">User</option>
+							<option value="subreddit">Subreddit</option>
+						</select>
+						<form onSubmit={onFormSubmit}>
+							<input
+								value={query}
+								onChange={onQueryChange}
+								placeholder="Query"
+								className="border-2 border-gray-300 rounded-lg mt-10 pl-3"
+							/>
+						</form>
+					</div>
+				)}
 			</div>
 			{!loading && posts.length > 0 && (
-				<div className="grid grid-cols-3 gap-4 mt-10">
-					{posts.map((post) => (
-						// create a "card" for each image, the image should only take up the space its given
-						// and be centered in the card
-						<div className="flex justify-center">
-							<img
-								src={post}
-								className=""
-								alt="reddit post"
-							/>
-						</div>
-					))}
+				<div className="flex items-center justify-center min-h-screen">
+					<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center justify-center">
+						{posts.map((post) => (
+							<div className="flex flex-col items-center mt-10 p-2 border-2 border-gray-300 rounded-lg w-64 h-64">
+								<div className="w-full h-full overflow-hidden">
+									<img src={post} className="w-full h-full object-cover" />
+								</div>
+								<div className="mt-2">
+									<a href={post} className="text-lg font-bold">
+										hello world
+									</a>
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
 			)}
 		</>
