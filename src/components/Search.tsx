@@ -105,10 +105,10 @@ const Search = () => {
 				{!success && <span className="dark:text-white mt-10">Failed to find any results!</span>}
 				{posts.length > 0 && (
 					<div className="space-x-5">
-						<button className="dark:text-white mt-5" onClick={() => setPosts([])}>
+						<button className="dark:text-white mt-5" title="Clear Results" onClick={() => setPosts([])}>
 							<Trash2 size={20}></Trash2>
 						</button>
-						<button className="dark:text-white mt-5" onClick={() => setPosts(shuffle(posts))}>
+						<button className="dark:text-white mt-5" title="Shuffle Results"onClick={() => setPosts(shuffle(posts))}>
 							<Shuffle size={20}></Shuffle>
 						</button>
 					</div>
