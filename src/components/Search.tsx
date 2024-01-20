@@ -1,4 +1,4 @@
-import { Shuffle, Trash2 } from "lucide-react";
+import { Shuffle, Trash2, ExternalLink } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type { SubredditResponse } from "../types";
 import { shuffle, subreddit, username } from "../utils";
@@ -105,11 +105,30 @@ const Search = () => {
 				{!success && <span className="dark:text-white mt-10">Failed to find any results!</span>}
 				{posts.length > 0 && (
 					<div className="space-x-5">
-						<button className="dark:text-white mt-5" title="Clear Results" onClick={() => setPosts([])}>
-							<Trash2 size={20}></Trash2>
+						<button
+							className="dark:text-white mt-5"
+							title="Clear Results"
+							onClick={() => setPosts([])}
+						>
+							<Trash2 size={20} />
 						</button>
-						<button className="dark:text-white mt-5" title="Shuffle Results"onClick={() => setPosts(shuffle(posts))}>
-							<Shuffle size={20}></Shuffle>
+						<button
+							className="dark:text-white mt-5"
+							title="Shuffle Results"
+							onClick={() => setPosts(shuffle(posts))}
+						>
+							<Shuffle size={20} />
+						</button>
+						<button
+							className="dark:text-white mt-5"
+							title="View Link"
+							onClick={() =>
+								window.open(
+									(mode === "user" ? username(query) : subreddit(query)).slice(0, -5)
+								)
+							}
+						>
+							<ExternalLink size={20} />
 						</button>
 					</div>
 				)}
