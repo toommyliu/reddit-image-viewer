@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from "react";
+import { username, subreddit } from "../utils";
+import type { SubredditResponse } from "../types";
 
-const username = (u: string) => `https://www.reddit.com/user/${u}.json`;
-const subreddit = (r: string) => `https://www.reddit.com/r/${r}.json`;
+// TODO: image grid doesnt respect theme and image cards are messed up when scrolling
 
 const SearchField = () => {
 	const [query, setQuery] = useState("");
-	const [mode, setMode] = useState("user");
+	const [mode, setMode] = useState("");
 	const [loading, setLoading] = useState(false);
-	const [posts, setPosts] = useState<string[]>([]);
+	const [posts, setPosts] = useState<{ title: string; url: string }[]>([]);
 
 	const onModeChange = (event: FormEvent<HTMLSelectElement>) => {
 		event.preventDefault();
@@ -23,7 +24,6 @@ const SearchField = () => {
 	};
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
-		// probably not needed?
 		if (loading) {
 			console.log("prevented request while loading already?");
 			return;
@@ -38,16 +38,16 @@ const SearchField = () => {
 
 		fetch(url)
 			.then((res) => res.json())
-			.then((data) => {
+			.then((data: SubredditResponse) => {
+				console.log(data);
 				const { children } = data.data;
 				for (const child of children) {
-					console.log(child);
 					const is_image = child.data["post_hint"] == "image";
 					if (is_image) {
-						const { preview } = child.data;
-						if (preview["enabled"]) {
-							setPosts((posts) => [...posts, child.data.url]);
-						}
+						setPosts((posts) => [
+							...posts,
+							{ title: child.data["title"], url: child.data["url"] },
+						]);
 					}
 				}
 			})
@@ -84,18 +84,22 @@ const SearchField = () => {
 				)}
 			</div>
 			{!loading && posts.length > 0 && (
-				<div className="flex items-center justify-center min-h-screen">
+				<div className="flex items-center justify-center">
 					<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center justify-center">
-						{posts.map((post) => (
+						{posts.map((post, idx) => (
 							<div className="flex flex-col items-center mt-10 p-2 border-2 border-gray-300 rounded-lg w-64 h-64">
-								<div className="w-full h-full overflow-hidden">
-									<img src={post} className="w-full h-full object-cover" />
-								</div>
-								<div className="mt-2">
-									<a href={post} className="text-lg font-bold">
-										hello world
-									</a>
-								</div>
+								<img
+									src={post.url}
+									className="w-full h-full object-cover"
+									onClick={(event) => event.preventDefault()}
+								/>
+								<a
+									href={post}
+									className="mt-2 text-center text-neutral-950 dark:text-white"
+									key={`post-${idx}`}
+								>
+									{post.title}
+								</a>
 							</div>
 						))}
 					</div>
