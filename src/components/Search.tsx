@@ -25,7 +25,7 @@ const Search = () => {
 	};
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();		
+		event.preventDefault();
 
 		if (query === "") {
 			return;
