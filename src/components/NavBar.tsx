@@ -1,5 +1,7 @@
 import { useTheme } from "./ThemeProvider";
-import { Moon, Sun, Github } from "lucide-react";
+import Moon from "../icons/moon";
+import Sun from "../icons/sun";
+import Github from "../icons/github";
 
 function NavBar() {
 	const { theme, setTheme } = useTheme();
@@ -11,7 +13,7 @@ function NavBar() {
 				</div>
 				<button className="ml-auto">
 					<Github
-						className="text-white h-[1.2rem] w-[1.2rem] mr-4"
+						className="dark:text-white h-[1.2rem] w-[1.2rem] mr-4"
 						onClick={() => {
 							window.open("https://github.com/toommyliu/reddit-image-viewer");
 						}}
