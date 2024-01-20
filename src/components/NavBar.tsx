@@ -5,7 +5,7 @@ function NavBar() {
 	const { theme, setTheme } = useTheme();
 	return (
 		<>
-			<nav className="flex items-center justify-between flex-wrap p-6 bg-stone-600 dark:bg-[#181818]">
+			<nav className="flex items-center justify-between flex-wrap p-6 bg-stone-800 dark:bg-[#181818]">
 				<div className="flex items-center flex-shrink-0 mr-6 gap-3">
 					<span className="text-xl text-white">Reddit Image Viewer</span>
 				</div>
