@@ -4,10 +4,12 @@ import SearchField from "./components/SearchField";
 
 function App() {
 	return (
-		<ThemeProvider>
-			<NavBar />
-			<SearchField />
-		</ThemeProvider>
+		<div className="dark:bg-[#1f1f1f] h-screen">
+			<ThemeProvider>
+				<NavBar />
+				<SearchField />
+			</ThemeProvider>
+		</div>
 	);
 }
 
