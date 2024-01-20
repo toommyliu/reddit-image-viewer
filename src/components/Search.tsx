@@ -25,9 +25,9 @@ const Search = () => {
 	};
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		if (loading) {
-			console.log("prevented request while loading already?");
+		event.preventDefault();		
+
+		if (query === "") {
 			return;
 		}
 
