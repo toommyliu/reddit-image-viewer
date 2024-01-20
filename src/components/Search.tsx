@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import type { SubredditResponse } from "../types";
 import { shuffle, subreddit, username } from "../utils";
 import Post from "./Post";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Search = () => {
 	const [query, setQuery] = useState("");
@@ -35,11 +36,15 @@ const Search = () => {
 		setLoading(true);
 		setPosts([]);
 
-		const url = mode === "user" ? username(query) : subreddit(query);
+		let url = mode === "user" ? username(query) : subreddit(query);	
+		url += ""; // ?limit=100
+		
+		// TODO: finish infinite scrolling
+
 		console.log(`url: ${url}`);
 
 		// TODO: better error handling
-		fetch(url)
+		fetch(`${url}`)
 			.then((res) => {
 				if (res.status !== 200) {
 					setSuccess(false);
@@ -134,11 +139,22 @@ const Search = () => {
 				)}
 			</div>
 			{!loading && posts.length > 0 && (
-				<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
-					{posts.map((post, idx) => (
-						<Post img={post.url} title={post.title} key={`post-${idx}`} />
-					))}
-				</section>
+				<>
+					<InfiniteScroll
+						dataLength={posts.length}
+						next={() => {
+							alert("we need more!");
+						}}
+						hasMore={true}
+						loader={<h4>Loading...</h4>}
+					>
+						<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
+							{posts.map((post, idx) => (
+								<Post img={post.url} title={post.title} key={`post-${idx}`} />
+							))}
+						</section>
+					</InfiniteScroll>
+				</>
 			)}
 		</>
 	);
