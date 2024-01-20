@@ -1,13 +1,13 @@
 import { ThemeProvider } from "./components/ThemeProvider";
 import NavBar from "./components/NavBar";
-import SearchField from "./components/SearchField";
+import Search from "./components/Search";
 
 function App() {
 	return (
-		<div className="dark:bg-[#1f1f1f] h-screen">
+		<div className="dark:bg-[#1f1f1f] h-max-content">
 			<ThemeProvider>
 				<NavBar />
-				<SearchField />
+				<Search />
 			</ThemeProvider>
 		</div>
 	);
