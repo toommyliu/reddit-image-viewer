@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* not the best solution but it works :p */
+html.dark {
+	background-color: #1f1f1f;
+}

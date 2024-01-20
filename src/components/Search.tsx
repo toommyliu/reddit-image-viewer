@@ -1,14 +1,15 @@
+import { Shuffle, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { username, subreddit } from "../utils";
 import type { SubredditResponse } from "../types";
+import { shuffle, subreddit, username } from "../utils";
+import Post from "./Post";
 
-// TODO: image grid doesnt respect theme and image cards are messed up when scrolling
-
-const SearchField = () => {
+const Search = () => {
 	const [query, setQuery] = useState("");
-	const [mode, setMode] = useState("");
+	const [mode, setMode] = useState("user");
 	const [loading, setLoading] = useState(false);
 	const [posts, setPosts] = useState<{ title: string; url: string }[]>([]);
+	const [success, setSuccess] = useState(true);
 
 	const onModeChange = (event: FormEvent<HTMLSelectElement>) => {
 		event.preventDefault();
@@ -24,21 +25,32 @@ const SearchField = () => {
 	};
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
 		if (loading) {
 			console.log("prevented request while loading already?");
 			return;
 		}
 
+		setSuccess(true);
 		setLoading(true);
 		setPosts([]);
-		event.preventDefault();
 
 		const url = mode === "user" ? username(query) : subreddit(query);
 		console.log(`url: ${url}`);
 
+		// TODO: better error handling
 		fetch(url)
-			.then((res) => res.json())
+			.then((res) => {
+				if (res.status !== 200) {
+					setSuccess(false);
+					return null;
+				}
+				return res.json();
+			})
 			.then((data: SubredditResponse) => {
+				if (!data) {
+					return;
+				}
 				console.log(data);
 				const { children } = data.data;
 				for (const child of children) {
@@ -50,8 +62,16 @@ const SearchField = () => {
 						]);
 					}
 				}
+				setSuccess(true);
 			})
-			.catch((err) => console.error(err))
+			.catch((err) => {
+				if ("reason" in err && "message" in err && "error" in err) {
+					if (err["error"] === 404) {
+						alert("404: Not Found");
+					}
+				}
+				console.log(err);
+			})
 			.finally(() => {
 				setLoading(false);
 			});
@@ -61,7 +81,7 @@ const SearchField = () => {
 		<>
 			<div className="flex flex-col justify-center items-center">
 				{loading ? (
-					<button>Loading</button>
+					<span className="dark:text-white mt-10">Loading</span>
 				) : (
 					<div className="flex justify-center">
 						<select
@@ -82,31 +102,27 @@ const SearchField = () => {
 						</form>
 					</div>
 				)}
+				{!success && <span className="dark:text-white mt-10">Failed to find any results!</span>}
+				{posts.length > 0 && (
+					<div className="space-x-5">
+						<button className="dark:text-white mt-5" onClick={() => setPosts([])}>
+							<Trash2 size={20}></Trash2>
+						</button>
+						<button className="dark:text-white mt-5" onClick={() => setPosts(shuffle(posts))}>
+							<Shuffle size={20}></Shuffle>
+						</button>
+					</div>
+				)}
 			</div>
 			{!loading && posts.length > 0 && (
-				<div className="flex items-center justify-center">
-					<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center justify-center">
-						{posts.map((post, idx) => (
-							<div className="flex flex-col items-center mt-10 p-2 border-2 border-gray-300 rounded-lg w-64 h-64">
-								<img
-									src={post.url}
-									className="w-full h-full object-cover"
-									onClick={(event) => event.preventDefault()}
-								/>
-								<a
-									href={post}
-									className="mt-2 text-center text-neutral-950 dark:text-white"
-									key={`post-${idx}`}
-								>
-									{post.title}
-								</a>
-							</div>
-						))}
-					</div>
-				</div>
+				<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
+					{posts.map((post, idx) => (
+						<Post img={post.url} title={post.title} key={`post-${idx}`} />
+					))}
+				</section>
 			)}
 		</>
 	);
 };
 
-export default SearchField;
+export default Search;

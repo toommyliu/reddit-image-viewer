@@ -1,7 +1,5 @@
 import { useTheme } from "./ThemeProvider";
-import Moon from "../icons/moon";
-import Sun from "../icons/sun";
-import Github from "../icons/github";
+import { Moon, Sun, Github } from "lucide-react";
 
 function NavBar() {
 	const { theme, setTheme } = useTheme();

@@ -1,7 +1,7 @@
 // https://ui.shadcn.com/docs/dark-mode/vite
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light"; 
+type Theme = "dark" | "light";
 
 type ThemeProviderProps = {
 	children: React.ReactNode;
@@ -57,8 +57,8 @@ export const useTheme = () => {
 	const context = useContext(ThemeProviderContext);
 
 	if (context === undefined) {
-        throw new Error("useTheme must be used within a ThemeProvider");
-    }
+		throw new Error("useTheme must be used within a ThemeProvider");
+	}
 
 	return context;
 };
