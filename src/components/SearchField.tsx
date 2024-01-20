@@ -12,13 +12,14 @@ const SearchField = () => {
 	const onModeChange = (event: FormEvent<HTMLSelectElement>) => {
 		event.preventDefault();
 		// @ts-expect-error value exists
-		setMode(event.target.value);
+		setMode(event.target.value as string);
 	};
 
 	const onQueryChange = (event: FormEvent<HTMLInputElement>) => {
 		event.preventDefault();
 		// @ts-expect-error value exists
-		setQuery(event.target.value.toLowerCase());
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+		setQuery((event.target.value as string).toLowerCase());
 	};
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
