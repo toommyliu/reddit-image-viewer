@@ -1,30 +1,39 @@
 import { Shuffle, Trash2, ExternalLink } from "lucide-react";
-import { useState, type FormEvent, useEffect, useCallback } from "react";
+import { useState, type FormEvent } from "react";
 import { shuffle, subreddit, username } from "../utils";
 import Post from "./Post";
+import InfiniteScroll from "react-infinite-scroller";
 
 export default function Search() {
-	const [query, setQuery] = useState("");
-	const [mode, setMode] = useState("user");
+	const [query, setQuery] = useState<{ term: string; mode: string }>({
+		term: "",
+		mode: "user",
+	});
 	const [loading, setLoading] = useState(false);
 	const [posts, setPosts] = useState<{ title: string; url: string }[]>([]);
 	const [page, setPage] = useState(1);
 	const [submit, setSubmit] = useState(false);
 
-	// load 9 posts at a time
-	const loadPosts = useCallback(() => {
+	const loadPosts = () => {
 		if (!submit) {
 			return;
 		}
-		if (query == "") {
+		if (query.term == "") {
 			return;
 		}
 
 		const arr: typeof posts = [];
 
-		let url = mode === "user" ? username(query) : subreddit(query);
-		url += `?limit=${9 * page}`;
+		const { term, mode } = query;
+		let url = mode === "user" ? username(term) : subreddit(term);
+		url += `?limit=${Math.min(9 * page, 100)}`;
 		console.log(`url: ${url}`);
+
+		// TODO: improve
+		if (Math.min(9 * page, 100) == 100) {
+			console.log('already hit limit, dont continue!');
+			return;
+		} 
 
 		fetch(`${url}`)
 			.then((res) => {
@@ -37,19 +46,16 @@ export default function Search() {
 				if (!res) {
 					return;
 				}
-				console.log(res);
 				/* eslint-disable */
 				const startIndex = (page - 1) * 9;
-				for (const child of res.data.children) {
-					const is_image = child.data["post_hint"] == "image";
-					if (is_image) {
-						const obj = { title: child.data["title"], url: child.data["url"] };
-						arr.push(obj);
-					}
+				const endIndex = startIndex - 1 + 9;
+				for (let i = startIndex; i < endIndex; i++) {
+					const child = res.data.children[i];
+					arr.push({ title: child.data["title"], url: child.data["url"] });
 				}
-				const endIndex = startIndex + arr.length;
 				/* eslint-enable */
-				setPosts((prev) => [...prev, ...arr.slice(startIndex, endIndex)]);
+				setPosts((prev) => [...prev, ...arr]);
+				setPage((prev) => prev + 1);
 			})
 			.catch((err) => {
 				console.log(err);
@@ -57,32 +63,12 @@ export default function Search() {
 			.finally(() => {
 				setLoading(false);
 			});
-	}, [mode, page, query, submit]);
-
-	useEffect(() => {
-		loadPosts();
-	}, [loadPosts]);
-
-	const handleScroll = () => {
-		if (
-			window.innerHeight + document.documentElement.scrollTop + 1 >=
-			document.documentElement.scrollHeight
-		) {
-			console.log("incrementing page");
-			setLoading(true);
-			setPage((previous) => previous + 1);
-		}
 	};
-
-	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		if (query === "") {
+		if (query.term === "") {
 			return;
 		}
 
@@ -101,9 +87,12 @@ export default function Search() {
 					<div className="flex justify-center">
 						<select
 							className="border-2 border-gray-300 rounded-lg focus:outline-none mr-2 mt-10 text-center"
-							value={mode}
+							value={query.mode}
 							onChange={(event) => {
-								setMode(event.target.value);
+								setQuery({
+									...query,
+									mode: event.target.value,
+								});
 							}}
 						>
 							<option value="user">User</option>
@@ -111,10 +100,13 @@ export default function Search() {
 						</select>
 						<form onSubmit={onFormSubmit}>
 							<input
-								value={query}
+								value={query.term}
 								onChange={(event) => {
 									event.preventDefault();
-									setQuery(event.target.value.toLowerCase());
+									setQuery({
+										...query,
+										term: event.target.value.toLowerCase(),
+									});
 								}}
 								placeholder="Query"
 								className="border-2 border-gray-300 rounded-lg mt-10 pl-3"
@@ -143,7 +135,10 @@ export default function Search() {
 							title="View Link"
 							onClick={() =>
 								window.open(
-									(mode === "user" ? username(query) : subreddit(query)).slice(0, -5)
+									(query.mode === "user"
+										? username(query.term)
+										: subreddit(query.term)
+									).slice(0, -5)
 								)
 							}
 						>
@@ -153,11 +148,13 @@ export default function Search() {
 				)}
 			</div>
 			<>
-				<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
-					{posts.map((post, idx) => (
-						<Post img={post.url} title={post.title} key={`post-${idx}`} />
-					))}
-				</section>
+				<InfiniteScroll pageStart={page} loadMore={loadPosts} hasMore={true}>
+					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
+						{posts.map((post, idx) => (
+							<Post img={post.url} title={post.title} key={`post-${idx}`} />
+						))}
+					</section>
+				</InfiniteScroll>
 			</>
 		</>
 	);
