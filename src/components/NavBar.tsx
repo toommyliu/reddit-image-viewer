@@ -1,7 +1,7 @@
 import { useTheme } from "./ThemeProvider";
 import { Moon, Sun, Github } from "lucide-react";
 
-function NavBar() {
+export default function NavBar() {
 	const { theme, setTheme } = useTheme();
 	return (
 		<>
@@ -28,5 +28,3 @@ function NavBar() {
 		</>
 	);
 }
-
-export default NavBar;

@@ -5,7 +5,7 @@ import { shuffle, subreddit, username } from "../utils";
 import Post from "./Post";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-const Search = () => {
+export default function Search() {
 	const [query, setQuery] = useState("");
 	const [mode, setMode] = useState("user");
 	const [loading, setLoading] = useState(false);
@@ -36,9 +36,9 @@ const Search = () => {
 		setLoading(true);
 		setPosts([]);
 
-		let url = mode === "user" ? username(query) : subreddit(query);	
+		let url = mode === "user" ? username(query) : subreddit(query);
 		url += ""; // ?limit=100
-		
+
 		// TODO: finish infinite scrolling
 
 		console.log(`url: ${url}`);
@@ -158,6 +158,4 @@ const Search = () => {
 			)}
 		</>
 	);
-};
-
-export default Search;
+}

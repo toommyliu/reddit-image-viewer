@@ -5,7 +5,7 @@ type PostProps = {
 	title: string;
 };
 
-const Post = ({ img, title }: PostProps) => {
+export default function Post({ img, title }: PostProps) {
 	return (
 		<>
 			<div className="w-72 bg-white dark:dark:bg-[#1f1f1f] rounded border-2">
@@ -17,6 +17,4 @@ const Post = ({ img, title }: PostProps) => {
 			</div>
 		</>
 	);
-};
-
-export default Post;
+}
