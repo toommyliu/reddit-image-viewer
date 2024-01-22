@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
-import { subreddit, username } from "../utils";
+import type { Query } from "../types";
+import { makeSubredditUrl, makeUserUrl } from "../utils";
 import Actions from "./Actions";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
-import type { Query } from "../types";
 
 export default function SearchField() {
 	const [query, setQuery] = useState<Query>({
@@ -27,7 +27,7 @@ export default function SearchField() {
 		const arr: typeof posts = [];
 
 		const { term, mode } = query;
-		let url = mode === "user" ? username(term) : subreddit(term);
+		let url = mode === "user" ? makeUserUrl(term) : makeSubredditUrl(term);
 		url += `?limit=${Math.min(9 * page, 100)}`;
 		console.log(`url: ${url}`);
 
@@ -69,6 +69,7 @@ export default function SearchField() {
 			})
 			.finally(() => {
 				setLoading(false);
+				setSubmit(false);
 			});
 	};
 

@@ -1,5 +1,5 @@
 import { Trash2, Shuffle, ExternalLink } from "lucide-react";
-import { shuffle, username, subreddit } from "../utils";
+import { shuffle, makeSubredditUrl, makeUserUrl } from "../utils";
 import { usePosts } from "./PostProvider";
 import type { Query } from "../types";
 
@@ -23,7 +23,10 @@ export default function Actions({ query }: { query: Query }) {
 				title="View Link"
 				onClick={() =>
 					window.open(
-						(query.mode === "user" ? username(query.term) : subreddit(query.term)).slice(0, -5)
+						(query.mode === "user"
+							? makeUserUrl(query.term)
+							: makeSubredditUrl(query.term)
+						).slice(0, -5)
 					)
 				}
 			>
