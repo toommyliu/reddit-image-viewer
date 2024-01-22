@@ -4,9 +4,10 @@ import { subreddit, username } from "../utils";
 import Actions from "./Actions";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
+import type { Query } from "../types";
 
 export default function SearchField() {
-	const [query, setQuery] = useState<{ term: string; mode: string }>({
+	const [query, setQuery] = useState<Query>({
 		term: "",
 		mode: "user",
 	});

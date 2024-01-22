@@ -1,9 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-
-type Post = {
-	title: string;
-	url: string;
-};
+import type { Post } from "../types";
 
 type PostProviderProps = {
 	children: ReactNode;

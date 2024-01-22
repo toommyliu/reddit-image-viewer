@@ -1,11 +1,7 @@
 import { Trash2, Shuffle, ExternalLink } from "lucide-react";
 import { shuffle, username, subreddit } from "../utils";
 import { usePosts } from "./PostProvider";
-
-type Query = {
-	term: string;
-	mode: string;
-};
+import type { Query } from "../types";
 
 export default function Actions({ query }: { query: Query }) {
 	const { posts, setPosts } = usePosts();

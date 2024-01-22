@@ -1,5 +1,15 @@
 // some info may be redacted because they're useless
 
+export type Post = {
+	title: string;
+	url: string;
+};
+
+export type Query = {
+	term: string;
+	mode: string;
+};
+
 export interface SubredditResponse {
 	kind: string;
 	data: {
