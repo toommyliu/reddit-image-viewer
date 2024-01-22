@@ -1,6 +1,8 @@
 # reddit-image-viewer
 
-Frontend for viewing posts with images from a User or Subreddit
+Frontend for viewing posts with images from a User or Subreddit.
 
-# Technologies
-React + Vite + Typescript
+While the implementation is "functional", it is still a work in progress.
+
+# Demo
+https://reddit-image-viewer-smoky.vercel.app/
