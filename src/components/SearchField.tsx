@@ -41,7 +41,7 @@ export default function SearchField() {
 			for (let i = 0; i < json.data.children.length; i++) {
 				const child = json.data.children[i];
 				if (child.data.post_hint === "image") {
-					const obj = { url: child.data.url, title: child.data.title };
+					const obj = { img_url: child.data.url, title: child.data.title, url: `https://reddit.com${child.data.permalink}` };
 					ret.posts.push(obj);
 				}
 			}
@@ -113,7 +113,7 @@ export default function SearchField() {
 				<InfiniteScroll loadMore={() => void fetchNextPage()} hasMore={hasNextPage}>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
-							<PostCard img={post.url} title={post.title} key={`post-${idx}`} />
+							<PostCard post={post} key={`post-${idx}`} />
 						))}
 					</section>
 				</InfiniteScroll>
