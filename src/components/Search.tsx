@@ -51,7 +51,11 @@ export default function Search() {
 				const endIndex = startIndex - 1 + 9;
 				for (let i = startIndex; i < endIndex; i++) {
 					const child = res.data.children[i];
-					arr.push({ title: child.data["title"], url: child.data["url"] });
+					const obj = { title: child.data["title"], url: child.data["url"] };
+					if (!obj.title || !obj.url) {
+						return;
+					}
+					arr.push(obj);
 				}
 				/* eslint-enable */
 				setPosts((prev) => [...prev, ...arr]);
