@@ -1,16 +1,17 @@
 import { ThemeProvider } from "./components/ThemeProvider";
 import NavBar from "./components/NavBar";
-import Search from "./components/Search";
+import SearchField from "./components/SearchField";
+import { PostProvider } from "./components/PostProvider";
 
-function App() {
+export default function App() {
 	return (
 		<>
 			<ThemeProvider>
 				<NavBar />
-				<Search />
+				<PostProvider>
+					<SearchField />
+				</PostProvider>
 			</ThemeProvider>
 		</>
 	);
 }
-
-export default App;

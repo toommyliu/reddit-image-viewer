@@ -1,16 +1,17 @@
-import { Shuffle, Trash2, ExternalLink } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { shuffle, subreddit, username } from "../utils";
-import Post from "./Post";
 import InfiniteScroll from "react-infinite-scroller";
+import { subreddit, username } from "../utils";
+import Actions from "./Actions";
+import PostCard from "./PostCard";
+import { usePosts } from "./PostProvider";
 
-export default function Search() {
+export default function SearchField() {
 	const [query, setQuery] = useState<{ term: string; mode: string }>({
 		term: "",
 		mode: "user",
 	});
+	const { posts, setPosts } = usePosts();
 	const [loading, setLoading] = useState(false);
-	const [posts, setPosts] = useState<{ title: string; url: string }[]>([]);
 	const [page, setPage] = useState(1);
 	const [submit, setSubmit] = useState(false);
 
@@ -59,7 +60,7 @@ export default function Search() {
 					arr.push(obj);
 				}
 				/* eslint-enable */
-				setPosts((prev) => [...prev, ...arr]);
+				setPosts([...posts, ...arr]);
 				setPage((prev) => prev + 1);
 			})
 			.catch((err) => {
@@ -119,44 +120,13 @@ export default function Search() {
 						</form>
 					</div>
 				)}
-				{posts.length > 0 && (
-					<div className="space-x-5">
-						<button
-							className="dark:text-white mt-5"
-							title="Clear Results"
-							onClick={() => setPosts([])}
-						>
-							<Trash2 size={20} />
-						</button>
-						<button
-							className="dark:text-white mt-5"
-							title="Shuffle Results"
-							onClick={() => setPosts(shuffle(posts))}
-						>
-							<Shuffle size={20} />
-						</button>
-						<button
-							className="dark:text-white mt-5"
-							title="View Link"
-							onClick={() =>
-								window.open(
-									(query.mode === "user"
-										? username(query.term)
-										: subreddit(query.term)
-									).slice(0, -5)
-								)
-							}
-						>
-							<ExternalLink size={20} />
-						</button>
-					</div>
-				)}
+				{posts.length > 0 && <Actions query={query} />}
 			</div>
 			<>
 				<InfiniteScroll pageStart={page} loadMore={loadPosts} hasMore={true}>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
-							<Post img={post.url} title={post.title} key={`post-${idx}`} />
+							<PostCard img={post.url} title={post.title} key={`post-${idx}`} />
 						))}
 					</section>
 				</InfiniteScroll>
