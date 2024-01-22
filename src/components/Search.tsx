@@ -31,11 +31,12 @@ export default function Search() {
 
 		// TODO: improve
 		if (Math.min(9 * page, 100) == 100) {
-			console.log('already hit limit, dont continue!');
+			console.log("already hit limit, dont continue!");
 			return;
-		} 
+		}
 
-		fetch(`${url}`)
+		const controller = new AbortController();
+		fetch(url, { signal: controller.signal })
 			.then((res) => {
 				if (res.status !== 200) {
 					return;
