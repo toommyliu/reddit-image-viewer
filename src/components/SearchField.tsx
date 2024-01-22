@@ -1,10 +1,13 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
-import type { Query } from "../types";
+import type { Post, Query } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
 import Actions from "./Actions";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
+
+type PostPage = { after: string; posts: Post[] };
 
 export default function SearchField() {
 	const [query, setQuery] = useState<Query>({
@@ -12,84 +15,66 @@ export default function SearchField() {
 		mode: "user",
 	});
 	const { posts, setPosts } = usePosts();
-	const [loading, setLoading] = useState(false);
-	const [page, setPage] = useState(1);
-	const [submit, setSubmit] = useState(false);
 
-	const loadPosts = () => {
-		if (!submit) {
-			return;
-		}
-		if (query.term == "") {
-			return;
-		}
+	// TODO: searching then clearing results will constantly fetch new data
 
-		const arr: typeof posts = [];
-
-		const { term, mode } = query;
-		let url = mode === "user" ? makeUserUrl(term) : makeSubredditUrl(term);
-		url += `?limit=${Math.min(9 * page, 100)}`;
-		console.log(`url: ${url}`);
-
-		// TODO: improve
-		if (Math.min(9 * page, 100) == 100) {
-			console.log("already hit limit, dont continue!");
-			return;
-		}
-
-		const controller = new AbortController();
-		fetch(url, { signal: controller.signal })
-			.then((res) => {
-				if (res.status !== 200) {
-					return;
+	const { isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
+		PostPage,
+		Error,
+		PostPage[],
+		string[],
+		string
+	>({
+		queryKey: ["posts"],
+		// @ts-expect-error TODO: fix this
+		queryFn: async ({ pageParam }) => {
+			const controller = new AbortController();
+			let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
+			if (pageParam) {
+				url += `?after=${pageParam}`;
+			}
+			console.log("url: ", url);
+			const res = await fetch(url, { signal: controller.signal });
+			/* eslint-disable */
+			const json = await res.json();
+			const ret: PostPage = { after: json.data.after || "none", posts: [] };
+			for (let i = 0; i < json.data.children.length; i++) {
+				const child = json.data.children[i];
+				if (child.data.post_hint === "image") {
+					const obj = { url: child.data.url, title: child.data.title };
+					ret.posts.push(obj);
 				}
-				return res.json();
-			})
-			.then((res) => {
-				if (!res) {
-					return;
-				}
-				/* eslint-disable */
-				const startIndex = (page - 1) * 9;
-				const endIndex = startIndex - 1 + 9;
-				for (let i = startIndex; i < endIndex; i++) {
-					const child = res.data.children[i];
-					const obj = { title: child.data["title"], url: child.data["url"] };
-					if (!obj.title || !obj.url) {
-						return;
-					}
-					arr.push(obj);
-				}
-				/* eslint-enable */
-				setPosts([...posts, ...arr]);
-				setPage((prev) => prev + 1);
-			})
-			.catch((err) => {
-				console.log(err);
-			})
-			.finally(() => {
-				setLoading(false);
-				setSubmit(false);
-			});
-	};
+			}
+
+			console.log(json);
+
+			if (ret.posts.length === 0) {
+				return;
+			}
+
+			setPosts([...posts, ...ret.posts]);
+			return ret;
+			/* eslint-enable */
+		},
+		getNextPageParam: (lastPage) => {
+			if (lastPage?.after !== "none") {
+				return lastPage.after;
+			}
+			return null;
+		},
+		initialPageParam: "",
+		enabled: false,
+	});
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-
-		if (query.term === "") {
-			return;
-		}
-
-		setLoading(true);
-		setPosts([]);
-		setSubmit(true);
-		loadPosts();
+		void fetchNextPage();
 	};
 
 	return (
 		<>
 			<div className="flex flex-col justify-center items-center">
-				{loading ? (
+				{isLoading ? (
 					<span className="dark:text-white mt-10">Loading</span>
 				) : (
 					<div className="flex justify-center">
@@ -125,7 +110,7 @@ export default function SearchField() {
 				{posts.length > 0 && <Actions query={query} />}
 			</div>
 			<>
-				<InfiniteScroll pageStart={page} loadMore={loadPosts} hasMore={true}>
+				<InfiniteScroll loadMore={() => void fetchNextPage()} hasMore={hasNextPage}>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
 							<PostCard img={post.url} title={post.title} key={`post-${idx}`} />

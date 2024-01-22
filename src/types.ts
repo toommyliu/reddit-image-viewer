@@ -5,6 +5,11 @@ export type Post = {
 	url: string;
 };
 
+export type PostPage = {
+	posts: Post[];
+	next?: string;
+}
+
 export type Query = {
 	term: string;
 	mode: string;
