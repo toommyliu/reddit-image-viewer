@@ -110,7 +110,7 @@ export default function SearchField() {
 				{posts.length > 0 && <Actions query={query} />}
 			</div>
 			<>
-				<InfiniteScroll loadMore={() => void fetchNextPage()} hasMore={hasNextPage}>
+				<InfiniteScroll loadMore={() => void fetchNextPage()} hasMore={hasNextPage && posts.length !== 0}>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
 							<PostCard post={post} key={`post-${idx}`} />
