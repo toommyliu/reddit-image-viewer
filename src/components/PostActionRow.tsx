@@ -3,23 +3,25 @@ import { shuffle, makeSubredditUrl, makeUserUrl } from "../utils";
 import { usePosts } from "./PostProvider";
 import type { Query } from "../types";
 
+const BUTTON_SIZE = 20;
+
 export default function PostActionRow({ query }: { query: Query }) {
 	const { posts, setPosts } = usePosts();
 
 	return (
 		<div className="space-x-5">
 			<button className="dark:text-white mt-5" title="Clear Results" onClick={() => setPosts([])}>
-				<Trash2 size={20} />
+				<Trash2 size={BUTTON_SIZE} />
 			</button>
 			<button
-				className="dark:text-white mt-5"
+				className="dark:text-white"
 				title="Shuffle Results"
 				onClick={() => setPosts(shuffle(posts))}
 			>
-				<Shuffle size={20} />
+				<Shuffle size={BUTTON_SIZE} />
 			</button>
 			<button
-				className="dark:text-white mt-5"
+				className="dark:text-white"
 				title="View Link"
 				onClick={() =>
 					window.open(
@@ -30,7 +32,7 @@ export default function PostActionRow({ query }: { query: Query }) {
 					)
 				}
 			>
-				<ExternalLink size={20} />
+				<ExternalLink size={BUTTON_SIZE} />
 			</button>
 		</div>
 	);

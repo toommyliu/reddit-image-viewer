@@ -14,8 +14,8 @@ export default function SearchField() {
 		mode: "user",
 	});
 	const { posts, setPosts } = usePosts();
-
-	const { isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
+	// TODO: sometimes infinite scroll is triggered even if user doesnt scroll (asmongold)
+	const { isLoading, isError, isFetching, error, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		PostPage,
 		Error,
 		PostPage[],
@@ -23,7 +23,6 @@ export default function SearchField() {
 		string
 	>({
 		queryKey: ["posts"],
-		// @ts-expect-error TODO: fix this
 		queryFn: async ({ pageParam }) => {
 			let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
 			if (pageParam) {
@@ -32,11 +31,26 @@ export default function SearchField() {
 
 			console.log("url: ", url);
 
-			const controller = new AbortController();
-			const res = await fetch(url, { signal: controller.signal });
+			const abortController = new AbortController();
+
 			/* eslint-disable */
-			const json = await res.json();
-			const ret: PostPage = { after: json.data.after || "none", posts: [] };
+			const req = await fetch(url, { signal: abortController.signal })
+				.then((res) => res)
+				.catch(() => null);
+
+			if (!req?.ok) {
+				throw new Error(`${query.mode} not found`);
+			}
+
+			const json = await req.json();
+			console.log(json);
+
+			const ret: PostPage = { after: json.data.after, posts: [] };
+
+			if (json.data.children.length === 0) {
+				throw new Error(`${query.mode === "user" ? "u" : "r"}/${query.term} has no posts`);
+			}
+
 			for (let i = 0; i < json.data.children.length; i++) {
 				const child = json.data.children[i];
 				if (child.data.post_hint === "image") {
@@ -49,24 +63,18 @@ export default function SearchField() {
 				}
 			}
 
-			console.log(json);
-
 			if (ret.posts.length === 0) {
-				return;
+				throw new Error("no compatible posts found");
 			}
 
 			setPosts([...posts, ...ret.posts]);
 			return ret;
 			/* eslint-enable */
 		},
-		getNextPageParam: (lastPage) => {
-			if (lastPage.after !== "none") {
-				return lastPage.after;
-			}
-			return null;
-		},
+		getNextPageParam: (lastPage) => lastPage.after,
 		initialPageParam: "",
 		enabled: false,
+		retry: false,
 	});
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -77,7 +85,7 @@ export default function SearchField() {
 	return (
 		<>
 			<div className="flex flex-col justify-center items-center">
-				{isLoading ? (
+				{isLoading && !!isError ? (
 					<div className="flex flex-col justify-center items-center dark:text-white mt-10">
 						<Loader2 size={20} className="animate-spin" />
 						<span>Loading</span>
@@ -114,11 +122,12 @@ export default function SearchField() {
 					</div>
 				)}
 				{posts.length > 0 && <PostActionRow query={query} />}
+				{!!isError && <span className="dark:text-red-500 mt-5">{error?.message}</span>}
 			</div>
 			<>
 				<InfiniteScroll
 					loadMore={() => void fetchNextPage()}
-					hasMore={hasNextPage && posts.length !== 0}
+					hasMore={hasNextPage && !isFetching && posts.length !== 0}
 				>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
