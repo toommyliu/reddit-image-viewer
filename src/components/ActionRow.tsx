@@ -3,7 +3,7 @@ import { shuffle, makeSubredditUrl, makeUserUrl } from "../utils";
 import { usePosts } from "./PostProvider";
 import type { Query } from "../types";
 
-export default function Actions({ query }: { query: Query }) {
+export default function ActionRow({ query }: { query: Query }) {
 	const { posts, setPosts } = usePosts();
 
 	return (

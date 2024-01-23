@@ -1,12 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import type { Post, Query } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
-import Actions from "./Actions";
+import ActionRow from "./ActionRow";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
-import { Loader2 } from "lucide-react";
 
 type PostPage = { after: string; posts: Post[] };
 
@@ -113,7 +113,7 @@ export default function SearchField() {
 						</form>
 					</div>
 				)}
-				{posts.length > 0 && <Actions query={query} />}
+				{posts.length > 0 && <ActionRow query={query} />}
 			</div>
 			<>
 				<InfiniteScroll
