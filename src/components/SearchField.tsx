@@ -6,6 +6,7 @@ import { makeSubredditUrl, makeUserUrl } from "../utils";
 import Actions from "./Actions";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
+import { Loader2 } from "lucide-react";
 
 type PostPage = { after: string; posts: Post[] };
 
@@ -15,8 +16,6 @@ export default function SearchField() {
 		mode: "user",
 	});
 	const { posts, setPosts } = usePosts();
-
-	// TODO: searching then clearing results will constantly fetch new data
 
 	const { isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		PostPage,
@@ -41,7 +40,11 @@ export default function SearchField() {
 			for (let i = 0; i < json.data.children.length; i++) {
 				const child = json.data.children[i];
 				if (child.data.post_hint === "image") {
-					const obj = { img_url: child.data.url, title: child.data.title, url: `https://reddit.com${child.data.permalink}` };
+					const obj = {
+						img_url: child.data.url,
+						title: child.data.title,
+						url: `https://reddit.com${child.data.permalink}`,
+					};
 					ret.posts.push(obj);
 				}
 			}
@@ -75,7 +78,10 @@ export default function SearchField() {
 		<>
 			<div className="flex flex-col justify-center items-center">
 				{isLoading ? (
-					<span className="dark:text-white mt-10">Loading</span>
+					<div className="flex flex-col justify-center items-center dark:text-white mt-10">
+						<Loader2 size={20} className="animate-spin" />
+						<span>Loading</span>
+					</div>
 				) : (
 					<div className="flex justify-center">
 						<select
@@ -110,7 +116,10 @@ export default function SearchField() {
 				{posts.length > 0 && <Actions query={query} />}
 			</div>
 			<>
-				<InfiniteScroll loadMore={() => void fetchNextPage()} hasMore={hasNextPage && posts.length !== 0}>
+				<InfiniteScroll
+					loadMore={() => void fetchNextPage()}
+					hasMore={hasNextPage && posts.length !== 0}
+				>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
 							<PostCard post={post} key={`post-${idx}`} />
