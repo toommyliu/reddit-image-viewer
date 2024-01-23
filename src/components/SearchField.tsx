@@ -88,6 +88,7 @@ export default function SearchField() {
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
 		fails.current = 0;
 		event.preventDefault();
+		setPosts([]);
 		void fetchNextPage();
 	};
 
