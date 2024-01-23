@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import type { PostPage, Query } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
@@ -9,13 +9,13 @@ import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
 
 export default function SearchField() {
+	const fails = useRef(0);
 	const [query, setQuery] = useState<Query>({
 		term: "",
 		mode: "user",
 	});
 	const { posts, setPosts } = usePosts();
-	// TODO: sometimes infinite scroll is triggered even if user doesnt scroll (asmongold)
-	const { isLoading, isError, isFetching, error, hasNextPage, fetchNextPage } = useInfiniteQuery<
+	const { isLoading, isError, isFetchingNextPage, error, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		PostPage,
 		Error,
 		PostPage[],
@@ -64,6 +64,9 @@ export default function SearchField() {
 			}
 
 			if (ret.posts.length === 0) {
+				if (++fails.current >= 3) {
+					throw new Error("failed to find compatible posts in time; forcing stop.");
+				}
 				throw new Error("no compatible posts found");
 			}
 
@@ -71,13 +74,19 @@ export default function SearchField() {
 			return ret;
 			/* eslint-enable */
 		},
-		getNextPageParam: (lastPage) => lastPage.after,
+		getNextPageParam: (lastPage) => {
+			if (fails.current >= 3) {
+				return null;
+			}
+			return lastPage.after;
+		},
 		initialPageParam: "",
 		enabled: false,
 		retry: false,
 	});
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+		fails.current = 0;
 		event.preventDefault();
 		void fetchNextPage();
 	};
@@ -127,7 +136,7 @@ export default function SearchField() {
 			<>
 				<InfiniteScroll
 					loadMore={() => void fetchNextPage()}
-					hasMore={hasNextPage && !isFetching && posts.length !== 0}
+					hasMore={hasNextPage && !isFetchingNextPage}
 				>
 					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
 						{posts.map((post, idx) => (
