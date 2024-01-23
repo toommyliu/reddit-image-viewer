@@ -2,13 +2,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
-import type { Post, Query } from "../types";
+import type { PostPage, Query } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
-import ActionRow from "./ActionRow";
+import PostActionRow from "./PostActionRow";
 import PostCard from "./PostCard";
 import { usePosts } from "./PostProvider";
-
-type PostPage = { after: string; posts: Post[] };
 
 export default function SearchField() {
 	const [query, setQuery] = useState<Query>({
@@ -27,12 +25,14 @@ export default function SearchField() {
 		queryKey: ["posts"],
 		// @ts-expect-error TODO: fix this
 		queryFn: async ({ pageParam }) => {
-			const controller = new AbortController();
 			let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
 			if (pageParam) {
 				url += `?after=${pageParam}`;
 			}
+
 			console.log("url: ", url);
+
+			const controller = new AbortController();
 			const res = await fetch(url, { signal: controller.signal });
 			/* eslint-disable */
 			const json = await res.json();
@@ -60,7 +60,7 @@ export default function SearchField() {
 			/* eslint-enable */
 		},
 		getNextPageParam: (lastPage) => {
-			if (lastPage?.after !== "none") {
+			if (lastPage.after !== "none") {
 				return lastPage.after;
 			}
 			return null;
@@ -113,7 +113,7 @@ export default function SearchField() {
 						</form>
 					</div>
 				)}
-				{posts.length > 0 && <ActionRow query={query} />}
+				{posts.length > 0 && <PostActionRow query={query} />}
 			</div>
 			<>
 				<InfiniteScroll
