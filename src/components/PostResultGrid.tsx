@@ -31,12 +31,16 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 					}
 				}
 
-				let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
-				if (pageParam) {
-					url += `?after=${pageParam}`;
-				}
+				const url = new URL(
+					query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term)
+				);
 
-				console.log("url: ", url);
+				if (pageParam) {
+					url.searchParams.append("after", pageParam);
+				}
+				url.searchParams.append("raw_json", "1");
+
+				console.log("url: ", url.toString());
 
 				/* eslint-disable */
 				const req = await fetch(url, { signal })
@@ -99,7 +103,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 					<span>Loading</span>
 				</div>
 			)}
-			{
+			{status === "success" && (
 				<>
 					<PostActionRow query={query} />
 					<InfiniteScroll
@@ -113,7 +117,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 						</section>
 					</InfiniteScroll>
 				</>
-			}
+			)}
 		</>
 	);
 }
