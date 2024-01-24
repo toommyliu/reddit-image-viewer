@@ -23,7 +23,7 @@ export default function SearchField() {
 		string
 	>({
 		queryKey: ["posts"],
-		queryFn: async ({ pageParam }) => {
+		queryFn: async ({ pageParam, signal }) => {
 			let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
 			if (pageParam) {
 				url += `?after=${pageParam}`;
@@ -31,10 +31,8 @@ export default function SearchField() {
 
 			console.log("url: ", url);
 
-			const abortController = new AbortController();
-
 			/* eslint-disable */
-			const req = await fetch(url, { signal: abortController.signal })
+			const req = await fetch(url, { signal })
 				.then((res) => res)
 				.catch(() => null);
 
@@ -82,7 +80,7 @@ export default function SearchField() {
 		},
 		initialPageParam: "",
 		enabled: false,
-		retry: false
+		retry: false,
 	});
 	const queryClient = useQueryClient();
 
