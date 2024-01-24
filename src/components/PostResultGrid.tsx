@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import InfiniteScroll from "react-infinite-scroller";
