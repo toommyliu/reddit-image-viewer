@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useRef, type ChangeEvent, type FormEvent } from "react";
 import type { Query } from "../types";
 import { usePosts } from "./PostProvider";
 import PostResultGrid from "./PostResultGrid";
@@ -10,6 +10,8 @@ export default function SearchField() {
 		mode: "user",
 	});
 	const [submit, setSubmit] = useState(false);
+	const [error, setError] = useState<Error | undefined>();
+	const submitOnce = useRef(false);
 
 	const { setPosts } = usePosts();
 	const queryClient = useQueryClient();
@@ -20,10 +22,27 @@ export default function SearchField() {
 			...query,
 			[event.target.name]: event.target.value.toLowerCase(),
 		});
+		setSubmit(false);
 	};
 
 	const formSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		setError(undefined);
+
+		const { term } = query;
+		if (query.mode === "user") {
+			if (term.length < 3 || term.length > 20) {
+				setError(new Error("bad username"));
+			}
+		} else {
+			if (term.length < 3 || term.length > 22) {
+				setError(new Error("bad subreddit"));
+			}
+		}
+
+		if (!submitOnce.current) {
+			submitOnce.current = true;
+		}
 
 		// TODO: better way to deal with this? valid user -> invalid user
 		void queryClient.resetQueries({ queryKey: ["posts"] });
@@ -54,7 +73,10 @@ export default function SearchField() {
 					/>
 				</form>
 			</div>
-			<PostResultGrid query={query} submit={submit} setSubmit={setSubmit} />
+			{error && <span className="text-2xl dark:text-red-500 mt-10">{error.message}</span>}
+			{!(error instanceof Error) && submitOnce.current && (
+				<PostResultGrid query={query} submit={submit} setSubmit={setSubmit} />
+			)}
 		</div>
 	);
 }

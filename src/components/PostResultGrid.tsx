@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import type { PostPage, Query } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
@@ -15,10 +15,12 @@ type PostResultGridProps = {
 };
 
 export default function PostResultGrid({ query, submit, setSubmit }: PostResultGridProps) {
+	const [lastQuery, setLastQuery] = useState<string>(query.term);
+
 	const { posts, setPosts } = usePosts();
 	const { isLoading, isFetchingNextPage, isError, error, status, hasNextPage, fetchNextPage } =
 		useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
-			queryKey: ["posts"],
+			queryKey: ["posts", query.mode, lastQuery],
 			queryFn: async ({ pageParam, signal }) => {
 				const { term } = query;
 				if (query.mode === "user") {
@@ -38,7 +40,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 				if (pageParam) {
 					url.searchParams.append("after", pageParam);
 				}
-				url.searchParams.append("raw_json", "1");
+				// url.searchParams.append("raw_json", "1");
 
 				console.log("url: ", url.toString());
 
@@ -56,7 +58,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 
 				const ret: PostPage = { after: json.data.after, posts: [] };
 
-				if (json.data.children.length === 0) {
+				if (json.data.dist === 0 || json.data.children.length === 0) {
 					throw new Error(`${query.mode === "user" ? "u" : "r"}/${query.term} has no posts`);
 				}
 
@@ -88,6 +90,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 
 	useEffect(() => {
 		if (submit) {
+			setLastQuery(query.term);
 			void fetchNextPage();
 			setSubmit(false);
 		}
