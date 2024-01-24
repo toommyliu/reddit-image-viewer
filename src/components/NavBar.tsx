@@ -19,7 +19,7 @@ export default function NavBar() {
 				</button>
 				<button className="text-white" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
 					{theme === "light" ? (
-						<Sun className="h-[1.2rem] w-[1.2rem] text-white" />
+						<Sun className="h-[1.2rem] w-[1.2rem]" />
 					) : (
 						<Moon className="h-[1.2rem] w-[1.2rem]" />
 					)}
