@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState, useRef, type FormEvent } from "react";
 import InfiniteScroll from "react-infinite-scroller";
@@ -82,13 +82,18 @@ export default function SearchField() {
 		},
 		initialPageParam: "",
 		enabled: false,
-		retry: false,
+		retry: false
 	});
+	const queryClient = useQueryClient();
 
 	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
-		fails.current = 0;
 		event.preventDefault();
+
+		// remove old queries to prevent mismatch
+		void queryClient.resetQueries({ queryKey: ["posts"] });
 		setPosts([]);
+		fails.current = 0;
+
 		void fetchNextPage();
 	};
 
