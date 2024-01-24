@@ -12,7 +12,7 @@ type PostProviderState = {
 
 const initialState: PostProviderState = {
 	posts: [],
-	setPosts: () => null,
+	setPosts: () => null
 };
 
 const PostProviderContext = createContext<PostProviderState>(initialState);
@@ -24,7 +24,7 @@ export function PostProvider({ children, ...props }: PostProviderProps) {
 		posts,
 		setPosts: (posts: Post[]) => {
 			setPosts(posts);
-		},
+		}
 	};
 
 	return (

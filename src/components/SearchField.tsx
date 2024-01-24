@@ -7,7 +7,7 @@ import PostResultGrid from "./PostResultGrid";
 export default function SearchField() {
 	const [query, setQuery] = useState<Query>({
 		term: "",
-		mode: "user",
+		mode: "user"
 	});
 	const [submit, setSubmit] = useState(false);
 	const [error, setError] = useState<Error | undefined>();
@@ -20,7 +20,7 @@ export default function SearchField() {
 		event.preventDefault();
 		setQuery({
 			...query,
-			[event.target.name]: event.target.value.toLowerCase(),
+			[event.target.name]: event.target.value.toLowerCase()
 		});
 		setSubmit(false);
 	};

@@ -68,7 +68,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 						const obj = {
 							img_url: child.data.url,
 							title: child.data.title,
-							url: `https://reddit.com${child.data.permalink}`,
+							url: `https://reddit.com${child.data.permalink}`
 						};
 						ret.posts.push(obj);
 					}
@@ -85,7 +85,7 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 			getNextPageParam: (lastPage) => lastPage.after,
 			initialPageParam: "",
 			enabled: false,
-			retry: false,
+			retry: false
 		});
 
 	useEffect(() => {
