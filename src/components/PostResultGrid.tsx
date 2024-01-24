@@ -21,13 +21,13 @@ export default function PostResultGrid({ query, submit, setSubmit }: PostResultG
 			queryKey: ["posts"],
 			queryFn: async ({ pageParam, signal }) => {
 				const { term } = query;
-				if (query.mode === 'user') {
-					if (term.length < 3 || term.length > 20) { 
-						throw new Error('bad username');
+				if (query.mode === "user") {
+					if (term.length < 3 || term.length > 20) {
+						throw new Error("bad username");
 					}
 				} else {
 					if (term.length < 3 || term.length > 22) {
-						throw new Error('bad subreddit');
+						throw new Error("bad subreddit");
 					}
 				}
 
