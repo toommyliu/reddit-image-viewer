@@ -1,154 +1,60 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useState, useRef, type FormEvent } from "react";
-import InfiniteScroll from "react-infinite-scroller";
-import type { PostPage, Query } from "../types";
-import { makeSubredditUrl, makeUserUrl } from "../utils";
-import PostActionRow from "./PostActionRow";
-import PostCard from "./PostCard";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import type { Query } from "../types";
 import { usePosts } from "./PostProvider";
+import PostResultGrid from "./PostResultGrid";
 
 export default function SearchField() {
-	const fails = useRef(0);
 	const [query, setQuery] = useState<Query>({
 		term: "",
 		mode: "user",
 	});
-	const { posts, setPosts } = usePosts();
-	const { isLoading, isError, isFetchingNextPage, error, hasNextPage, fetchNextPage } = useInfiniteQuery<
-		PostPage,
-		Error,
-		PostPage[],
-		string[],
-		string
-	>({
-		queryKey: ["posts"],
-		queryFn: async ({ pageParam, signal }) => {
-			let url = query.mode === "user" ? makeUserUrl(query.term) : makeSubredditUrl(query.term);
-			if (pageParam) {
-				url += `?after=${pageParam}`;
-			}
+	const [submit, setSubmit] = useState(false);
 
-			console.log("url: ", url);
-
-			/* eslint-disable */
-			const req = await fetch(url, { signal })
-				.then((res) => res)
-				.catch(() => null);
-
-			if (!req?.ok) {
-				throw new Error(`${query.mode} not found`);
-			}
-
-			const json = await req.json();
-			console.log(json);
-
-			const ret: PostPage = { after: json.data.after, posts: [] };
-
-			if (json.data.children.length === 0) {
-				throw new Error(`${query.mode === "user" ? "u" : "r"}/${query.term} has no posts`);
-			}
-
-			for (let i = 0; i < json.data.children.length; i++) {
-				const child = json.data.children[i];
-				if (child.data.post_hint === "image") {
-					const obj = {
-						img_url: child.data.url,
-						title: child.data.title,
-						url: `https://reddit.com${child.data.permalink}`,
-					};
-					ret.posts.push(obj);
-				}
-			}
-
-			if (ret.posts.length === 0) {
-				if (++fails.current >= 3) {
-					throw new Error("failed to find compatible posts in time; forcing stop.");
-				}
-				throw new Error("no compatible posts found");
-			}
-
-			setPosts([...posts, ...ret.posts]);
-			return ret;
-			/* eslint-enable */
-		},
-		getNextPageParam: (lastPage) => {
-			if (fails.current >= 3) {
-				return null;
-			}
-			return lastPage.after;
-		},
-		initialPageParam: "",
-		enabled: false,
-		retry: false,
-	});
+	const { setPosts } = usePosts();
 	const queryClient = useQueryClient();
 
-	const onFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+	const updateQuery = (event: ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>) => {
+		event.preventDefault();
+		setQuery({
+			...query,
+			[event.target.name]: event.target.value.toLowerCase(),
+		});
+	};
+
+	const formSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		// remove old queries to prevent mismatch
+		// TODO: better way to deal with this? valid user -> invalid user
 		void queryClient.resetQueries({ queryKey: ["posts"] });
-		setPosts([]);
-		fails.current = 0;
 
-		void fetchNextPage();
+		setPosts([]);
+		setSubmit(true);
 	};
 
 	return (
-		<>
-			<div className="flex flex-col justify-center items-center">
-				{isLoading && !!isError ? (
-					<div className="flex flex-col justify-center items-center dark:text-white mt-10">
-						<Loader2 size={20} className="animate-spin" />
-						<span>Loading</span>
-					</div>
-				) : (
-					<div className="flex justify-center">
-						<select
-							className="border-2 border-gray-300 rounded-lg focus:outline-none mr-2 mt-10 text-center"
-							value={query.mode}
-							onChange={(event) => {
-								setQuery({
-									...query,
-									mode: event.target.value,
-								});
-							}}
-						>
-							<option value="user">User</option>
-							<option value="subreddit">Subreddit</option>
-						</select>
-						<form onSubmit={onFormSubmit}>
-							<input
-								value={query.term}
-								onChange={(event) => {
-									event.preventDefault();
-									setQuery({
-										...query,
-										term: event.target.value.toLowerCase(),
-									});
-								}}
-								placeholder="Query"
-								className="border-2 border-gray-300 rounded-lg mt-10 pl-3"
-							/>
-						</form>
-					</div>
-				)}
-				{posts.length > 0 && <PostActionRow query={query} />}
-				{!!isError && <span className="dark:text-red-500 mt-5">{error?.message}</span>}
-			</div>
-			<>
-				<InfiniteScroll
-					loadMore={() => void fetchNextPage()}
-					hasMore={hasNextPage && !isFetchingNextPage}
+		<div className="flex flex-col justify-center items-center">
+			<div className="flex justify-center">
+				<select
+					className="border-2 border-gray-300 focus:outline-none mr-2 mt-10 text-center"
+					value={query.mode}
+					name="mode"
+					onChange={(event) => updateQuery(event)}
 				>
-					<section className="w-fit mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center justify-center gap-y-5 gap-x-10 mt-10 mb-5">
-						{posts.map((post, idx) => (
-							<PostCard post={post} key={`post-${idx}`} />
-						))}
-					</section>
-				</InfiniteScroll>
-			</>
-		</>
+					<option value="user">User</option>
+					<option value="subreddit">Subreddit</option>
+				</select>
+				<form onSubmit={formSubmit}>
+					<input
+						value={query.term}
+						onChange={(event) => updateQuery(event)}
+						placeholder="Query"
+						name="term"
+						className="border-2 border-gray-300 focus:outline-none mt-10 pl-3"
+					/>
+				</form>
+			</div>
+			<PostResultGrid query={query} submit={submit} setSubmit={setSubmit} />
+		</div>
 	);
 }
