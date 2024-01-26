@@ -1,5 +1,5 @@
 import { useColorMode } from "@chakra-ui/color-mode";
-import { Button, Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@nextui-org/react";
+import { Button, Divider, Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@nextui-org/react";
 import { Github, Moon, Sun } from "lucide-react";
 
 export default function NavBar() {
@@ -29,7 +29,7 @@ export default function NavBar() {
 					</NavbarItem>
 				</NavbarContent>
 			</Navbar>
-			<hr className="border-slate-200" />
+			<Divider />
 		</>
 	);
 }
