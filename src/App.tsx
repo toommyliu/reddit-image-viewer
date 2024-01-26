@@ -3,22 +3,27 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import NavBar from "./components/NavBar";
 import { PostProvider } from "./components/PostProvider";
 import SearchField from "./components/SearchField";
-import { ThemeProvider } from "./components/ThemeProvider";
+import { NextUIProvider } from "@nextui-org/react";
+import { ColorModeProvider } from "@chakra-ui/color-mode";
+import PostResultGrid from "./components/PostResultGrid";
 
 const queryClient = new QueryClient();
 
 export default function App() {
 	return (
 		<>
-			<QueryClientProvider client={queryClient}>
-				<ReactQueryDevtools />
-				<ThemeProvider>
-					<NavBar />
-					<PostProvider>
-						<SearchField />
-					</PostProvider>
-				</ThemeProvider>
-			</QueryClientProvider>
+			<NextUIProvider>
+				<QueryClientProvider client={queryClient}>
+					<ColorModeProvider options={{ initialColorMode: "system" }}>
+						<NavBar />
+						<PostProvider>
+							<SearchField />
+							<PostResultGrid />
+						</PostProvider>
+					</ColorModeProvider>
+					<ReactQueryDevtools />
+				</QueryClientProvider>
+			</NextUIProvider>
 		</>
 	);
 }

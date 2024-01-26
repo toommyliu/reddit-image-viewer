@@ -1,8 +1,13 @@
+import { nextui } from "@nextui-org/react";
 export default {
-	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+	content: [
+		"./index.html",
+		"./src/**/*.{js,ts,jsx,tsx}",
+		"./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+	],
 	theme: {
-		extend: {},
+		extend: {}
 	},
-	plugins: ["prettier-plugin-tailwindcss"],
-	darkMode: "class",
+	plugins: ["prettier-plugin-tailwindcss", nextui()],
+	darkMode: ["class", '[data-mode="dark"]']
 };

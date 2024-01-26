@@ -1,5 +1,5 @@
-export const makeUserUrl = (user: string) => `https://www.reddit.com/user/${user}.json`;
-export const makeSubredditUrl = (sub: string) => `https://www.reddit.com/r/${sub}.json`;
+export const makeUserUrl = (user: string) => `https://www.reddit.com/user/${user}`;
+export const makeSubredditUrl = (sub: string) => `https://www.reddit.com/r/${sub}`;
 
 export const shuffle = <T>(og_arr: T[]): T[] => {
 	const arr = og_arr.slice();
