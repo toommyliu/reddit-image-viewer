@@ -11,13 +11,7 @@ import PostActionRow from "./PostActionRow";
 export default function PostResultGrid() {
 	const { ref, inView } = useInView();
 	const { term, mode, posts, setPosts } = usePosts();
-	const { fetchNextPage, hasNextPage, isFetching, isPaused } = useInfiniteQuery<
-		PostPage,
-		Error,
-		PostPage[],
-		string[],
-		string
-	>({
+	const { fetchNextPage, isFetching } = useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
 		queryKey: ["posts"],
 		queryFn: async ({ pageParam, signal }) => {
 			const url = new URL(`${mode === "user" ? makeUserUrl(term) : makeSubredditUrl(term)}.json`);
