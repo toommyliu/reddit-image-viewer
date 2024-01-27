@@ -1,17 +1,16 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { usePosts } from "./PostProvider";
 import type { PostPage } from "../types";
 import { makeSubredditUrl, makeUserUrl } from "../utils";
-import { Button, Spinner } from "@nextui-org/react";
-import { useInView } from "react-intersection-observer";
-import { useEffect } from "react";
 import PostCard from "./PostCard";
 import PostActionRow from "./PostActionRow";
+import { useState, useEffect } from "react";
 
 export default function PostResultGrid() {
-	const { ref, inView } = useInView();
+	const [localQuery, setLocalQuery] = useState("");
 	const { term, mode, posts, setPosts } = usePosts();
-	const { fetchNextPage, isFetching } = useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
+	const queryClient = useQueryClient();
+	const { fetchNextPage, isLoading } = useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
 		queryKey: ["posts"],
 		queryFn: async ({ pageParam, signal }) => {
 			const url = new URL(`${mode === "user" ? makeUserUrl(term) : makeSubredditUrl(term)}.json`);
@@ -66,28 +65,47 @@ export default function PostResultGrid() {
 		retry: false
 	});
 
-	useEffect(() => {
-		if (term.length > 0 && inView) {
-			void fetchNextPage();
-			console.log("load!");
+	// https://github.com/eaydev/viewittapp/blob/master/src/components/layout/Search-container.js#L3
+	const onScroll = () => {
+		const div = document.querySelector("#post-card-grid");
+
+		if (div) {
+			const dimensions = div.getBoundingClientRect();
+			const { bottom } = dimensions;
+
+			if (bottom <= window.innerHeight && !isLoading) {
+				console.log("loading next page");
+				void fetchNextPage();
+			}
 		}
-	}, [term, inView, fetchNextPage]);
+	};
+
+	useEffect(() => {
+		window.addEventListener("scroll", onScroll);
+		return () => window.removeEventListener("scroll", onScroll);
+	});
+
+	useEffect(() => {
+		if (term !== localQuery && term !== "") {
+			console.log("making first fetch");
+			setPosts([]);
+			setLocalQuery(term);
+			void queryClient.resetQueries({ queryKey: ["posts"] });
+			void fetchNextPage();
+		}
+	}, [localQuery, term, fetchNextPage, queryClient, setPosts, setLocalQuery]);
 
 	return (
 		<div className="mb-5 flex flex-col items-center">
-			{/* first load */}
-			{posts.length === 0 && isFetching && <Spinner label="Loading posts..." className="mt-10" />}
-			<>
-				{posts.length > 0 && <PostActionRow />}
-				<div className="mx-auto grid justify-center gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-					{posts.map((post, idx) => (
-						<PostCard key={`post-${idx}`} post={post} />
-					))}
-				</div>
-				<Button ref={ref} className="mt-10">
-					Load More
-				</Button>
-			</>
+			{posts.length > 0 && <PostActionRow />}
+			<div
+				id="post-card-grid"
+				className="mx-auto grid justify-center gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+			>
+				{posts.map((post, idx) => (
+					<PostCard key={`post-${idx}`} post={post} />
+				))}
+			</div>
 		</div>
 	);
 }
