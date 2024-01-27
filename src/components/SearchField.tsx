@@ -13,7 +13,7 @@ export default function SearchField() {
 	};
 
 	return (
-		<div className="flex flex-col items-center mt-10">
+		<div className="mt-10 flex flex-col items-center">
 			<Tabs
 				className="focus:outline-none"
 				color="primary"
@@ -22,7 +22,7 @@ export default function SearchField() {
 				<Tab key="user" title="User" />
 				<Tab key="subreddit" title="Subreddit" />
 			</Tabs>
-			<form className="w-1/4 mt-5" onSubmit={onSubmit}>
+			<form className="mt-5 w-1/4" onSubmit={onSubmit}>
 				<Input placeholder="Query" fullWidth={false} />
 			</form>
 		</div>

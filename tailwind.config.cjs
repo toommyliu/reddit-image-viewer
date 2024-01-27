@@ -8,6 +8,6 @@ export default {
 	theme: {
 		extend: {}
 	},
-	plugins: ["prettier-plugin-tailwindcss", nextui()],
+	plugins: [nextui()],
 	darkMode: ["class", '[data-mode="dark"]']
 };

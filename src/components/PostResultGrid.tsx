@@ -67,19 +67,19 @@ export default function PostResultGrid() {
 	});
 
 	useEffect(() => {
-		if (inView) {
+		if (term.length > 0 && inView) {
 			void fetchNextPage();
 			console.log("load!");
 		}
-	}, [inView, fetchNextPage]);
+	}, [term, inView, fetchNextPage]);
 
 	return (
-		<div className="flex flex-col items-center mb-5">
+		<div className="mb-5 flex flex-col items-center">
 			{/* first load */}
 			{posts.length === 0 && isFetching && <Spinner label="Loading posts..." className="mt-10" />}
 			<>
 				{posts.length > 0 && <PostActionRow />}
-				<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 justify-center mx-auto">
+				<div className="mx-auto grid justify-center gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 					{posts.map((post, idx) => (
 						<PostCard key={`post-${idx}`} post={post} />
 					))}

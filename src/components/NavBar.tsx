@@ -8,7 +8,7 @@ export default function NavBar() {
 		<>
 			<Navbar>
 				<NavbarBrand>
-					<p className="font-bold text-xl">Reddit Image Viewer</p>
+					<p className="text-xl font-bold">Reddit Image Viewer</p>
 				</NavbarBrand>
 				<NavbarContent justify="end">
 					<NavbarItem>

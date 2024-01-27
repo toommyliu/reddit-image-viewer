@@ -9,14 +9,12 @@ export default function PostCard({ post }: PostProps) {
 	const { img_url, title } = post;
 
 	return (
-		<Card className="w-80 h-96 rounded-md drop-shadow-lg">
-			<CardBody className="items-center overflow-hidden h-64">
+		<Card className="h-96 w-80 rounded-md drop-shadow-lg">
+			<CardBody className="h-64 items-center overflow-hidden">
 				<Image className="h-full w-full rounded-sm" src={img_url} />
 			</CardBody>
 			<Divider className="mt-5" />
-			<CardFooter className="text-small justify-between h-16">
-				{title}
-			</CardFooter>
+			<CardFooter className="h-16 justify-between text-small">{title}</CardFooter>
 		</Card>
 	);
 }

@@ -17,7 +17,7 @@ export default function PostActionRow() {
 	return (
 		<>
 			{posts.length > 0 && (
-				<div className="space-x-5 mb-3 mt-3">
+				<div className="mb-3 mt-3 space-x-5">
 					<ButtonGroup>
 						<Button className="bg-transparent" onClick={reset} title="Clear">
 							<Trash2 size={20} />
