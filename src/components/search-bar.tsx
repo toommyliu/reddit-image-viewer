@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { useSearchContext } from "./search-context";
+import { useSearchContext } from "@/components/search-context";
 
 const InputForm = () => {
 	const { setQuery } = useSearchContext();

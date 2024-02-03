@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
 import { shuffle } from "@/utils";
+import { useInView } from "react-intersection-observer";
 
 type Post = {
 	data: { post_hint: string; title: string; url: string; name: string };
@@ -87,12 +88,22 @@ export default function CardGrid() {
 		retry: false
 	});
 
+	const [ref, inView] = useInView({
+		rootMargin: "100px 0px"
+	});
+
 	useEffect(() => {
 		if (submit) {
 			void refetch();
 			console.log("calling");
 		}
 	}, [submit, refetch]);
+
+	useEffect(() => {
+		if (inView) {
+			console.log("fetching!");
+		}
+	}, [inView]);
 
 	if (!query) {
 		return <></>;
@@ -114,6 +125,11 @@ export default function CardGrid() {
 					return <ImageCard post={post} key={`post-${idx}`} />;
 				})}
 			</ImageCardGrid>
+			{query.length > 0 && !isLoading && (
+				<div className="align-center flex justify-center py-20">
+					<button ref={ref}>load more</button>
+				</div>
+			)}
 		</>
 	);
 }
