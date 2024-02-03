@@ -1,4 +1,4 @@
-import { useEffect, type FC, type ReactNode } from "react";
+import { useState, useEffect, type FC, type ReactNode } from "react";
 import { useSearchContext } from "@/components/search-provider";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
@@ -70,12 +70,14 @@ const PostActionRow = () => {
 };
 
 export default function CardGrid() {
-	const { mode, query, submit, posts, setPosts } = useSearchContext();
-
+	const { mode, query, posts, setPosts } = useSearchContext();
+	const [localQuery, setLocalQuery] = useState("");
+	const queryClient = useQueryClient();
 	const { isLoading, fetchNextPage } = useInfiniteQuery({
 		queryKey: ["posts"],
 		queryFn: async ({ signal, pageParam }) => {
 			if (!query) {
+				console.log("blocked");
 				return null;
 			}
 
@@ -101,15 +103,28 @@ export default function CardGrid() {
 	});
 
 	const [ref, inView] = useInView({
-		rootMargin: "25px 0px"
+		rootMargin: "10px 0px"
 	});
 
+	// TODO: if clear results is clicked, the local query never gets reset
 	useEffect(() => {
-		if (inView && submit) {
+		if (query !== localQuery) {
+			// "reset"
+			void queryClient.resetQueries({ queryKey: ["posts"] });
+			setPosts([]);
+			setLocalQuery(query);
+
 			console.log("fetching!");
 			void fetchNextPage();
 		}
-	}, [inView, submit, fetchNextPage]);
+	}, [query, localQuery, setPosts, setLocalQuery, fetchNextPage]);
+
+	useEffect(() => {
+		if (inView) {
+			console.log("fetching next page!");
+			void fetchNextPage();
+		}
+	}, [inView, fetchNextPage]);
 
 	if (!query) {
 		return <></>;
@@ -131,7 +146,7 @@ export default function CardGrid() {
 					return <ImageCard post={post} key={`post-${idx}`} />;
 				})}
 			</ImageCardGrid>
-			{submit && (
+			{query.length > 0 && posts.length > 0 && (
 				<div className="align-center flex justify-center py-20">
 					<button ref={ref}>load more</button>
 				</div>

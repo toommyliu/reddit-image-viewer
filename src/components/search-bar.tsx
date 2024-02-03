@@ -3,14 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { useSearchContext } from "@/components/search-provider";
 
 const InputForm = () => {
-	const { setQuery } = useSearchContext();
-	return (
-		<Input
-			className="max-w-[256px] outline-none"
-			placeholder="Query"
-			onChange={(event) => setQuery(event.target.value)}
-		/>
-	);
+	return <Input name="query" className="max-w-[256px] outline-none" placeholder="Query" />;
 };
 
 const SelectMode = () => {
@@ -30,13 +23,18 @@ const SelectMode = () => {
 };
 
 export default function SearchBar() {
-	const { setSubmit } = useSearchContext();
+	const { setSubmit, setQuery } = useSearchContext();
 
 	return (
 		<form
 			className="flex flex-row items-center justify-center gap-3 py-5"
 			onSubmit={(event) => {
 				event.preventDefault();
+				// @ts-expect-error works fine
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				const q = event.target.query.value as string;
+				console.log("query: ", q);
+				setQuery(q);
 				setSubmit(true);
 			}}
 		>
