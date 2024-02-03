@@ -10,6 +10,11 @@ type Post = {
 	data: { post_hint: string; title: string; url: string; name: string };
 };
 
+type PostPage = {
+	after?: string;
+	posts: Post[];
+};
+
 const ImageCardGrid: FC<{ children: ReactNode }> = ({ children }) => {
 	return (
 		<div className="mx-auto grid max-w-screen-lg grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -32,7 +37,7 @@ const ImageCard = ({ post }: { post: Post }) => {
 };
 
 const PostActionRow = () => {
-	const { mode, query, posts, setPosts } = useSearchContext();
+	const { mode, query, posts, setSubmit, setPosts } = useSearchContext();
 	const queryClient = useQueryClient();
 
 	if (posts.length == 0) {
@@ -45,6 +50,7 @@ const PostActionRow = () => {
 				title="Clear Results"
 				onClick={() => {
 					setPosts([]);
+					setSubmit(false);
 					void queryClient.resetQueries({ queryKey: ["posts"] });
 				}}
 			>
@@ -64,35 +70,33 @@ const PostActionRow = () => {
 };
 
 export default function CardGrid() {
-	const { mode, query, submit, posts, setSubmit, setPosts } = useSearchContext();
+	const { mode, query, submit, posts, setPosts } = useSearchContext();
 
-	const { isLoading, status, hasNextPage, fetchNextPage } = useInfiniteQuery({
+	const { isLoading, fetchNextPage } = useInfiniteQuery({
 		queryKey: ["posts"],
 		queryFn: async ({ signal, pageParam }) => {
 			if (!query) {
-				console.log("blocked");
 				return null;
 			}
 
-			console.log("running query on: ", query);
 			const url = new URL(`https://www.reddit.com/${mode === "user" ? "u" : "r"}/${query}.json`);
 			if (pageParam) {
 				url.searchParams.append("after", pageParam);
 			}
 
 			console.log("url:", url.toString());
+
 			const req = await fetch(url.toString(), { signal });
 			const json = await req.json();
-			const ret = { after: json.data.after, posts: [] };
+			const ret: PostPage = { after: json.data.after as string, posts: [] };
 			ret.posts = json.data.children;
-			// setSubmit(false);
 			console.log(json);
 			setPosts([...posts, ...ret.posts]);
 			return ret;
 		},
 		enabled: false,
 		retry: false,
-		getNextPageParam: (lastPage) => lastPage.after,
+		getNextPageParam: (lastPage) => lastPage?.after,
 		initialPageParam: ""
 	});
 
@@ -102,16 +106,10 @@ export default function CardGrid() {
 
 	useEffect(() => {
 		if (inView && submit) {
-			console.log("fetching next page!");
+			console.log("fetching!");
 			void fetchNextPage();
 		}
 	}, [inView, submit, fetchNextPage]);
-
-	// useEffect(() => {
-	// 	if (inView) {
-	// 		console.log("fetching next page!");
-	// 	}
-	// }, [inView]);
 
 	if (!query) {
 		return <></>;
