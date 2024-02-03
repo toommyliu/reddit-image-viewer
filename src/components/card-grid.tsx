@@ -2,6 +2,7 @@ import { useEffect, type FC, type ReactNode } from "react";
 import { useSearchContext } from "@/components/search-context";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
+import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
 
 type Post = {
 	data: { post_hint: string; title: string; url: string; name: string };
@@ -25,6 +26,31 @@ const ImageCard = ({ post }: { post: Post }) => {
 				<span className="mt-3 text-lg font-bold">{post.data.title}</span>
 			</CardFooter>
 		</Card>
+	);
+};
+
+const PostActionRow = () => {
+	const { mode, query, posts, setPosts } = useSearchContext();
+
+	if (posts.length == 0) {
+		return <></>;
+	}
+
+	return (
+		<div className="mb-5 flex flex-row justify-center space-x-5">
+			<button title="Clear Results" onClick={() => setPosts([])}>
+				<Trash2 className="h-5 w-5" />
+			</button>
+			<button title="Shuffle Posts">
+				<Shuffle className="h-5 w-5" />
+			</button>
+			<button
+				title="View Source Link"
+				onClick={() => window.open(`https://reddit.com/${mode === "user" ? "u" : "r"}/${query}/`)}
+			>
+				<ExternalLink className="h-5 w-5" />
+			</button>
+		</div>
 	);
 };
 
@@ -69,14 +95,17 @@ export default function CardGrid() {
 	}
 
 	return (
-		<ImageCardGrid>
-			{posts.map((post, idx) => {
-				if (post.data.post_hint !== "image") {
-					return null;
-				}
+		<>
+			<PostActionRow />
+			<ImageCardGrid>
+				{posts.map((post, idx) => {
+					if (post.data.post_hint !== "image") {
+						return null;
+					}
 
-				return <ImageCard post={post} key={`post-${idx}`} />;
-			})}
-		</ImageCardGrid>
+					return <ImageCard post={post} key={`post-${idx}`} />;
+				})}
+			</ImageCardGrid>
+		</>
 	);
 }

@@ -34,7 +34,7 @@ export default function SearchBar() {
 
 	return (
 		<form
-			className="flex flex-row items-center justify-center gap-3 py-10"
+			className="flex flex-row items-center justify-center gap-3 py-5"
 			onSubmit={(event) => {
 				event.preventDefault();
 				setSubmit(true);

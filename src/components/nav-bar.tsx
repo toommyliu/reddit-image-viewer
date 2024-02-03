@@ -26,12 +26,18 @@ export default function Navbar() {
 	return (
 		<header className="flex items-center justify-between border-b-2 p-4 text-black">
 			<div className="flex items-center gap-2">
-				{/* <PiIcon className="h-8 w-8" /> */}
 				<h1 className="text-2xl font-bold">Reddit Image Viewer</h1>
 			</div>
 			<div className="flex items-center gap-4">
-				<GithubIcon className="h-6 w-6" />
-				{mode === "light" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+				<button
+					onClick={() => window.open("https://github.com/toommyliu/reddit-image-viewer")}
+					title="View Github Source"
+				>
+					<GithubIcon className="h-6 w-6" />
+				</button>
+				<button onClick={() => {}} title="Toggle Theme">
+					{mode === "light" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+				</button>
 			</div>
 		</header>
 	);
