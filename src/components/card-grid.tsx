@@ -117,7 +117,7 @@ export default function CardGrid() {
 			console.log("fetching!");
 			void fetchNextPage();
 		}
-	}, [query, localQuery, setPosts, setLocalQuery, fetchNextPage]);
+	}, [query, localQuery, queryClient, setPosts, setLocalQuery, fetchNextPage]);
 
 	useEffect(() => {
 		if (inView) {
