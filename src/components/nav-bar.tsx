@@ -1,5 +1,6 @@
 import { Sun, Moon, type LucideProps } from "lucide-react";
 import { cn } from "@/utils";
+import { useTheme } from "@/components/theme-provider";
 
 const GithubIcon = ({ className }: LucideProps) => {
 	return (
@@ -22,11 +23,13 @@ const GithubIcon = ({ className }: LucideProps) => {
 };
 
 export default function Navbar() {
-	const mode = "light";
+	const { theme, setTheme } = useTheme();
+
 	return (
 		<header className="flex items-center justify-between border-b-2 p-4 text-black">
 			<div className="flex items-center gap-2">
 				<h1 className="text-2xl font-bold">Reddit Image Viewer</h1>
+				{theme}
 			</div>
 			<div className="flex items-center gap-4">
 				<button
@@ -35,8 +38,13 @@ export default function Navbar() {
 				>
 					<GithubIcon className="h-6 w-6" />
 				</button>
-				<button onClick={() => {}} title="Toggle Theme">
-					{mode === "light" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+				<button
+					onClick={() => {
+						setTheme(theme == "dark" ? "light" : "dark");
+					}}
+					title="Toggle Theme"
+				>
+					{theme === "light" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
 				</button>
 			</div>
 		</header>
