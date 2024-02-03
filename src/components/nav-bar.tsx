@@ -26,10 +26,9 @@ export default function Navbar() {
 	const { theme, setTheme } = useTheme();
 
 	return (
-		<header className="flex items-center justify-between border-b-2 p-4 text-black">
+		<header className="flex items-center justify-between border-b-2 p-4 text-black dark:text-white">
 			<div className="flex items-center gap-2">
 				<h1 className="text-2xl font-bold">Reddit Image Viewer</h1>
-				{theme}
 			</div>
 			<div className="flex items-center gap-4">
 				<button

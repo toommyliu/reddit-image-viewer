@@ -1,5 +1,5 @@
 import { useEffect, type FC, type ReactNode } from "react";
-import { useSearchContext } from "@/components/search-context";
+import { useSearchContext } from "@/components/search-provider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
