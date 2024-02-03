@@ -1,6 +1,6 @@
 import { useEffect, type FC, type ReactNode } from "react";
 import { useSearchContext } from "@/components/search-provider";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
 import { shuffle } from "@/utils";
@@ -66,44 +66,52 @@ const PostActionRow = () => {
 export default function CardGrid() {
 	const { mode, query, submit, posts, setSubmit, setPosts } = useSearchContext();
 
-	const { isLoading, refetch } = useQuery({
+	const { isLoading, status, hasNextPage, fetchNextPage } = useInfiniteQuery({
 		queryKey: ["posts"],
-		queryFn: async ({ signal }) => {
+		queryFn: async ({ signal, pageParam }) => {
 			if (!query) {
 				console.log("blocked");
 				return null;
 			}
-			// await new Promise((resolve) => setTimeout(resolve, 2_000));
+
 			console.log("running query on: ", query);
-			const out = await fetch(`https://www.reddit.com/${mode === "user" ? "u" : "r"}/${query}.json`, {
-				signal
-			})
-				.then((res) => res.json())
-				.finally(() => setSubmit(false));
-			console.log(out);
-			setPosts(out.data.children);
-			return out;
+			const url = new URL(`https://www.reddit.com/${mode === "user" ? "u" : "r"}/${query}.json`);
+			if (pageParam) {
+				url.searchParams.append("after", pageParam);
+			}
+
+			console.log("url:", url.toString());
+			const req = await fetch(url.toString(), { signal });
+			const json = await req.json();
+			const ret = { after: json.data.after, posts: [] };
+			ret.posts = json.data.children;
+			// setSubmit(false);
+			console.log(json);
+			setPosts([...posts, ...ret.posts]);
+			return ret;
 		},
 		enabled: false,
-		retry: false
+		retry: false,
+		getNextPageParam: (lastPage) => lastPage.after,
+		initialPageParam: ""
 	});
 
 	const [ref, inView] = useInView({
-		rootMargin: "100px 0px"
+		rootMargin: "25px 0px"
 	});
 
 	useEffect(() => {
-		if (submit) {
-			void refetch();
-			console.log("calling");
+		if (inView && submit) {
+			console.log("fetching next page!");
+			void fetchNextPage();
 		}
-	}, [submit, refetch]);
+	}, [inView, submit, fetchNextPage]);
 
-	useEffect(() => {
-		if (inView) {
-			console.log("fetching!");
-		}
-	}, [inView]);
+	// useEffect(() => {
+	// 	if (inView) {
+	// 		console.log("fetching next page!");
+	// 	}
+	// }, [inView]);
 
 	if (!query) {
 		return <></>;
@@ -125,7 +133,7 @@ export default function CardGrid() {
 					return <ImageCard post={post} key={`post-${idx}`} />;
 				})}
 			</ImageCardGrid>
-			{query.length > 0 && !isLoading && (
+			{submit && (
 				<div className="align-center flex justify-center py-20">
 					<button ref={ref}>load more</button>
 				</div>
