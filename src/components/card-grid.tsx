@@ -81,7 +81,7 @@ export default function CardGrid() {
 				return null;
 			}
 
-			const url = new URL(`https://www.reddit.com/${mode === "user" ? "u" : "r"}/${query}.json`);
+			const url = new URL(`https://www.reddit.com/${mode === "user" ? "user" : "r"}/${query}.json`);
 			if (pageParam) {
 				url.searchParams.append("after", pageParam);
 			}
