@@ -1,8 +1,9 @@
 import { useEffect, type FC, type ReactNode } from "react";
 import { useSearchContext } from "@/components/search-context";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
+import { shuffle } from "@/utils";
 
 type Post = {
 	data: { post_hint: string; title: string; url: string; name: string };
@@ -31,6 +32,7 @@ const ImageCard = ({ post }: { post: Post }) => {
 
 const PostActionRow = () => {
 	const { mode, query, posts, setPosts } = useSearchContext();
+	const queryClient = useQueryClient();
 
 	if (posts.length == 0) {
 		return <></>;
@@ -38,10 +40,16 @@ const PostActionRow = () => {
 
 	return (
 		<div className="mb-5 flex flex-row justify-center space-x-5">
-			<button title="Clear Results" onClick={() => setPosts([])}>
+			<button
+				title="Clear Results"
+				onClick={() => {
+					setPosts([]);
+					void queryClient.resetQueries({ queryKey: ["posts"] });
+				}}
+			>
 				<Trash2 className="h-5 w-5" />
 			</button>
-			<button title="Shuffle Posts">
+			<button title="Shuffle Posts" onClick={() => setPosts(shuffle(posts))}>
 				<Shuffle className="h-5 w-5" />
 			</button>
 			<button
