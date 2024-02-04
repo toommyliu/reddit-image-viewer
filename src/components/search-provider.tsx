@@ -1,8 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-
-type Post = {
-	data: { post_hint: string; title: string; url: string; name: string };
-};
+import type { Post } from "@/types";
 
 type SearchContextProps = {
 	children: ReactNode;

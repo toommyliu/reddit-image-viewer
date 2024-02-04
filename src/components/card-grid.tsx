@@ -5,15 +5,7 @@ import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
 import { shuffle } from "@/utils";
 import { useInView } from "react-intersection-observer";
-
-type Post = {
-	data: { post_hint: string; title: string; url: string; name: string };
-};
-
-type PostPage = {
-	after?: string;
-	posts: Post[];
-};
+import type { Post, PostPage, JSONResponse } from "@/types";
 
 const ImageCardGrid: FC<{ children: ReactNode }> = ({ children }) => {
 	return (
@@ -25,12 +17,12 @@ const ImageCardGrid: FC<{ children: ReactNode }> = ({ children }) => {
 
 const ImageCard = ({ post }: { post: Post }) => {
 	return (
-		<Card key={`post-${post.data.name}`} className="w-full rounded-md border-2 drop-shadow-xl">
+		<Card key={`post-${post.created_utc}`} className="w-full rounded-md border-2 drop-shadow-xl">
 			<div className="border-b-2 py-3">
-				<img className="h-90 mx-auto aspect-[4/3] w-full" src={post.data.url} decoding="async" />
+				<img className="h-90 mx-auto aspect-[4/3] w-full" src={post.url} decoding="async" />
 			</div>
 			<CardFooter>
-				<span className="mt-3 text-lg font-bold">{post.data.title}</span>
+				<span className="mt-3 text-lg font-bold">{post.title}</span>
 			</CardFooter>
 		</Card>
 	);
@@ -73,12 +65,11 @@ export default function CardGrid() {
 	const { mode, query, posts, setPosts } = useSearchContext();
 	const [localQuery, setLocalQuery] = useState("");
 	const queryClient = useQueryClient();
-	const { isLoading, fetchNextPage } = useInfiniteQuery({
+	const { isLoading, fetchNextPage } = useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
 		queryKey: ["posts"],
 		queryFn: async ({ signal, pageParam }) => {
 			if (!query) {
-				console.log("blocked");
-				return null;
+				throw new Error("bad query");
 			}
 
 			const url = new URL(`https://www.reddit.com/${mode === "user" ? "user" : "r"}/${query}.json`);
@@ -89,10 +80,17 @@ export default function CardGrid() {
 			console.log("url:", url.toString());
 
 			const req = await fetch(url.toString(), { signal });
-			const json = await req.json();
+			if (!req.ok) {
+				throw new Error("failed fetch");
+			}
+
+			const json = (await req.json()) as JSONResponse;
 			const ret: PostPage = { after: json.data.after as string, posts: [] };
-			ret.posts = json.data.children;
-			console.log(json);
+			for (const child of json.data.children) {
+				ret.posts.push(child.data as unknown as Post);
+			}
+
+			// console.log(json);
 			setPosts([...posts, ...ret.posts]);
 			return ret;
 		},
@@ -139,7 +137,7 @@ export default function CardGrid() {
 			<PostActionRow />
 			<ImageCardGrid>
 				{posts.map((post, idx) => {
-					if (post.data.post_hint !== "image") {
+					if (post.post_hint !== "image") {
 						return null;
 					}
 
