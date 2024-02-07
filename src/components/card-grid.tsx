@@ -1,87 +1,118 @@
-import { useState, useEffect, type FC, type ReactNode } from "react";
-import { useSearchContext } from "@/components/search-provider";
+import {
+	ActionIcon,
+	ActionIconGroup,
+	Anchor,
+	AspectRatio,
+	Button,
+	Card,
+	CardSection,
+	Center,
+	Divider,
+	Image,
+	Loader,
+	SimpleGrid,
+	Text
+} from "@mantine/core";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, CardFooter } from "@/components/ui/card";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
-import { shuffle } from "@/utils";
+import { useEffect, useRef } from "react";
+import type { JSONResponse, Post, PostPage } from "../types";
+import { shuffle } from "../utils";
+import { useSearchContext } from "./search-provider";
 import { useInView } from "react-intersection-observer";
-import type { Post, PostPage, JSONResponse } from "@/types";
 
-const ImageCardGrid: FC<{ children: ReactNode }> = ({ children }) => {
-	return (
-		<div className="mx-auto grid max-w-screen-lg grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-			{children}
-		</div>
-	);
-};
+const PostCard = ({ post }: { post: Post }) => {
+	if (post.post_hint !== "image") {
+		return null;
+	}
 
-const ImageCard = ({ post }: { post: Post }) => {
 	return (
-		<Card key={`post-${post.created_utc}`} className="w-full rounded-md border-2 drop-shadow-xl">
-			<div className="border-b-2 py-3">
-				<img className="h-90 mx-auto aspect-[4/3] w-full" src={post.url} decoding="async" />
-			</div>
-			<CardFooter>
-				<span className="mt-3 text-lg font-bold">{post.title}</span>
-			</CardFooter>
+		<Card shadow="xl" padding="sm" radius="sm" style={{ overflow: "hidden" }} withBorder>
+			<CardSection style={{ position: "relative", overflow: "hidden" }}>
+				<AspectRatio ratio={4 / 3}>
+					<Image src={post.url} fit="contain" />
+				</AspectRatio>
+			</CardSection>
+			<Divider my="md" />
+			<Anchor href={`https://reddit.com${post.permalink}`} target="_blank">
+				<Text size="sm">{post.title}</Text>
+			</Anchor>
 		</Card>
 	);
 };
 
 const PostActionRow = () => {
-	const { mode, query, posts, setSubmit, setPosts } = useSearchContext();
+	const { mode, query, posts, setQuery, setPosts } = useSearchContext();
 	const queryClient = useQueryClient();
 
 	if (posts.length == 0) {
-		return <></>;
+		return null;
 	}
 
 	return (
-		<div className="mb-5 flex flex-row justify-center space-x-5">
-			<button
+		<ActionIconGroup style={{ gap: "10px" }}>
+			<ActionIcon
 				title="Clear Results"
+				variant="transparent"
 				onClick={() => {
 					setPosts([]);
-					setSubmit(false);
+					setQuery("");
 					void queryClient.resetQueries({ queryKey: ["posts"] });
 				}}
 			>
-				<Trash2 className="h-5 w-5" />
-			</button>
-			<button title="Shuffle Posts" onClick={() => setPosts(shuffle(posts))}>
-				<Shuffle className="h-5 w-5" />
-			</button>
-			<button
+				<Trash2 size={23} />
+			</ActionIcon>
+			<ActionIcon title="Shuffle Posts" variant="transparent" onClick={() => setPosts(shuffle(posts))}>
+				<Shuffle size={23} />
+			</ActionIcon>
+			<ActionIcon
 				title="View Source Link"
-				onClick={() => window.open(`https://reddit.com/${mode === "user" ? "u" : "r"}/${query}/`)}
+				variant="transparent"
+				onClick={() =>
+					window.open(
+						`https://reddit.com/${mode === "user" ? "u" : "r"}/${query}/`,
+						"_blank",
+						"noopener noreferrer"
+					)
+				}
 			>
-				<ExternalLink className="h-5 w-5" />
-			</button>
-		</div>
+				<ExternalLink size={23} />
+			</ActionIcon>
+		</ActionIconGroup>
 	);
 };
 
 export default function CardGrid() {
-	const { mode, query, posts, setPosts } = useSearchContext();
-	const [localQuery, setLocalQuery] = useState("");
-	const queryClient = useQueryClient();
-	const { isLoading, fetchNextPage } = useInfiniteQuery<PostPage, Error, PostPage[], string[], string>({
-		queryKey: ["posts"],
+	const { ref, inView } = useInView({
+		threshold: 0.85
+	});
+
+	const { query, mode, posts, setPosts } = useSearchContext();
+	const { isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery<
+		PostPage,
+		Error,
+		PostPage[],
+		string[],
+		string
+	>({
+		queryKey: [`posts-${mode}-${query}`],
 		queryFn: async ({ signal, pageParam }) => {
-			if (!query) {
-				throw new Error("bad query");
+			if (query.length === 0) {
+				throw new Error("no query");
 			}
 
-			const url = new URL(`https://www.reddit.com/${mode === "user" ? "user" : "r"}/${query}.json`);
+			const url = new URL(
+				`https://www.reddit.com/${mode === "Subreddit" ? "r" : "user"}/${query}.json`
+			);
 			if (pageParam) {
 				url.searchParams.append("after", pageParam);
 			}
 
-			console.log("url:", url.toString());
+			console.log(url.toString());
 
 			const req = await fetch(url.toString(), { signal });
 			if (!req.ok) {
-				throw new Error("failed fetch");
+				throw new Error("bad request");
 			}
 
 			const json = (await req.json()) as JSONResponse;
@@ -90,65 +121,63 @@ export default function CardGrid() {
 				ret.posts.push(child.data as unknown as Post);
 			}
 
-			// console.log(json);
-			setPosts([...posts, ...ret.posts]);
+			console.log(json.data.children);
+
+			setPosts((prev) => [...prev, ...ret.posts]);
+
 			return ret;
 		},
-		enabled: false,
-		retry: false,
-		getNextPageParam: (lastPage) => lastPage?.after,
-		initialPageParam: ""
+		enabled: query.length > 0,
+		initialPageParam: "",
+		getNextPageParam: (lastPage) => lastPage?.after
 	});
 
-	const [ref, inView] = useInView({
-		rootMargin: "10px 0px"
-	});
-
-	// TODO: if clear results is clicked, the local query never gets reset
 	useEffect(() => {
-		if (query !== localQuery) {
-			// "reset"
-			void queryClient.resetQueries({ queryKey: ["posts"] });
-			setPosts([]);
-			setLocalQuery(query);
-
-			console.log("fetching!");
-			void fetchNextPage();
+		if (!query.length) {
+			return;
 		}
-	}, [query, localQuery, queryClient, setPosts, setLocalQuery, fetchNextPage]);
+		void fetchNextPage();
+	}, [query, fetchNextPage]);
 
 	useEffect(() => {
 		if (inView) {
-			console.log("fetching next page!");
 			void fetchNextPage();
 		}
 	}, [inView, fetchNextPage]);
 
-	if (!query) {
-		return <></>;
+	if (query.length === 0) {
+		return null;
 	}
 
 	if (isLoading) {
-		return <span>loading...</span>;
+		return (
+			<Center p={30}>
+				<Loader />
+			</Center>
+		);
 	}
 
 	return (
 		<>
-			<PostActionRow />
-			<ImageCardGrid>
-				{posts.map((post, idx) => {
-					if (post.post_hint !== "image") {
-						return null;
-					}
-
-					return <ImageCard post={post} key={`post-${idx}`} />;
-				})}
-			</ImageCardGrid>
-			{query.length > 0 && posts.length > 0 && (
-				<div className="align-center flex justify-center py-20">
-					<button ref={ref}>load more</button>
-				</div>
-			)}
+			<Center py={15}>
+				<PostActionRow />
+			</Center>
+			<SimpleGrid cols={{ lg: 3, md: 2, sm: 1 }} mt={-50} p={50}>
+				{posts.map((post) => (
+					<PostCard key={post.created_utc} post={post} />
+				))}
+			</SimpleGrid>
+			<Center>
+				<Button
+					ref={ref}
+					onClick={() => void fetchNextPage()}
+					disabled={!hasNextPage || isFetchingNextPage}
+					display={posts.length > 0 && hasNextPage ? "" : "none"}
+					mb={100}
+				>
+					Load More
+				</Button>
+			</Center>
 		</>
 	);
 }

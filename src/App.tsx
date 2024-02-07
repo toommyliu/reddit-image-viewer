@@ -1,24 +1,26 @@
-import CardGrid from "@/components/card-grid";
-import SearchBar from "@/components/search-bar";
+import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Navbar from "@/components/nav-bar";
-import { SearchProvider } from "@/components/search-provider";
-import { ThemeProvider } from "@/components/theme-provider";
+import CardGrid from "./components/card-grid";
+import SearchField from "./components/search-field";
+import { SearchProvider } from "./components/search-provider";
+import Navbar from "./components/nav-bar";
+import ScrollToTop from "./components/scroll-to-top";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient();
 
 export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<ThemeProvider>
-				<div className="flex h-screen flex-col dark:bg-neutral-800">
-					<Navbar />
-					<SearchProvider>
-						<SearchBar />
-						<CardGrid />
-					</SearchProvider>
-				</div>
-			</ThemeProvider>
+			<MantineProvider>
+				<Navbar />
+				<SearchProvider>
+					<SearchField />
+					<CardGrid />
+				</SearchProvider>
+				<ScrollToTop />
+			</MantineProvider>
+			<ReactQueryDevtools />
 		</QueryClientProvider>
 	);
 }

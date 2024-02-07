@@ -23,6 +23,7 @@ export type JSONResponse = {
 				author: string;
 				permalink: string; // /r/subreddit/...
 				url: string; // url to the image
+				ups: number;
 			};
 		}[];
 		before: string | null;

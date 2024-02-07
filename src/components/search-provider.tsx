@@ -1,66 +1,61 @@
+import { useInputState } from "@mantine/hooks";
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { Post } from "@/types";
+import type { Post } from "../types";
 
 type SearchContextProps = {
 	children: ReactNode;
 };
 
+type ReactDispatchSetStateAction<T> = React.Dispatch<React.SetStateAction<T>>;
+
 type SearchContextState = {
 	mode: string;
-	setMode: (mode: string) => void;
+	setMode: ReactDispatchSetStateAction<string>;
 
 	query: string;
-	setQuery: (query: string) => void;
+	setQuery: (value: string | React.ChangeEvent<unknown> | null | undefined) => void;
 
 	submit: boolean;
-	setSubmit: (submit: boolean) => void;
+	setSubmit: ReactDispatchSetStateAction<boolean>;
 
 	posts: Post[];
-	setPosts: (posts: Post[]) => void;
+	setPosts: ReactDispatchSetStateAction<Post[]>;
 };
 
 const initialState: SearchContextState = {
 	mode: "user",
-	setMode: () => null,
+	setMode: () => {},
 
 	query: "",
-	setQuery: () => null,
+	setQuery: () => {},
 
 	submit: false,
-	setSubmit: () => null,
+	setSubmit: () => {},
 
 	posts: [],
-	setPosts: () => null
+	setPosts: () => {},
 };
 
 const SearchContext = createContext<SearchContextState>(initialState);
 
 export function SearchProvider({ children, ...props }: SearchContextProps) {
 	const [mode, setMode] = useState("user");
-	const [query, setQuery] = useState("");
+	const [query, setQuery] = useInputState("");
 	const [submit, setSubmit] = useState(false);
 	const [posts, setPosts] = useState<Post[]>([]);
 
 	const value = {
 		mode,
-		setMode: (mode: string) => {
-			setMode(mode);
-		},
+		setMode,
 
 		query,
-		setQuery: (query: string) => {
-			setQuery(query);
-		},
+		setQuery,
 
 		submit,
-		setSubmit: (submit: boolean) => {
-			setSubmit(submit);
-		},
+		setSubmit,
 
 		posts,
-		setPosts: (posts: Post[]) => {
-			setPosts(posts);
-		}
+		setPosts
 	};
 
 	return (
