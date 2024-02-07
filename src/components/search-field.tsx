@@ -1,7 +1,6 @@
 import { Button, Center, Flex, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useSearchContext } from "./search-provider";
-import { useEffect } from "react";
 
 const TextInputField = ({ ...props }) => {
 	return <TextInput name="query" placeholder="Query" style={{ width: "250px" }} {...props} />;

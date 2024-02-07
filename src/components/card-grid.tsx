@@ -15,11 +15,11 @@ import {
 } from "@mantine/core";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Shuffle, Trash2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import type { JSONResponse, Post, PostPage } from "../types";
 import { shuffle } from "../utils";
 import { useSearchContext } from "./search-provider";
-import { useInView } from "react-intersection-observer";
 
 const PostCard = ({ post }: { post: Post }) => {
 	if (post.post_hint !== "image") {
